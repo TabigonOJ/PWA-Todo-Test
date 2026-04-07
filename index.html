@@ -1,0 +1,973 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="theme-color" content="#eaf6fb">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="ふわっとTODO">
+  <meta name="description" content="やさしいデザインのTodoリスト管理アプリ">
+
+  <title>ふわっとTODO</title>
+
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
+  <link rel="icon" type="image/svg+xml" href="./icons/icon-192.svg">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #eef8fc;
+      --bg2: #e2f2f9;
+      --surface: #ffffff;
+      --surface2: #f4fbfe;
+      --border: #c8e8f4;
+      --border2: #b0d8ed;
+
+      --sky: #7ec8e3;
+      --sky-light: #d6f0fa;
+      --sky-dark: #4da8cc;
+      --sky-text: #2a7a9e;
+
+      --mint: #a8ddc9;
+      --mint-light: #ddf4ec;
+      --mint-dark: #5eb89a;
+      --mint-text: #2a7a5e;
+
+      --peach: #f9c6b4;
+      --peach-light: #fde8e0;
+      --peach-dark: #e8846a;
+      --peach-text: #9a4a32;
+
+      --lavender: #c4b5e8;
+      --lavender-light: #ece6f9;
+      --lavender-dark: #8e75cc;
+      --lavender-text: #5a3e9a;
+
+      --yellow: #f9e4a0;
+      --yellow-light: #fdf4d6;
+
+      --text: #3a5a6a;
+      --text-muted: #7aa0b0;
+      --text-light: #aac8d8;
+
+      --radius: 16px;
+      --radius-sm: 10px;
+      --radius-pill: 100px;
+      --shadow-soft: 0 2px 12px rgba(100, 180, 210, 0.15);
+      --shadow-card: 0 4px 20px rgba(100, 180, 210, 0.12);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      min-height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Zen Maru Gothic', 'Noto Sans JP', sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+    }
+
+    /* ── 背景の装飾 ── */
+    body::before {
+      content: '';
+      position: fixed;
+      top: -120px;
+      right: -120px;
+      width: 380px;
+      height: 380px;
+      background: radial-gradient(circle, #c8e8f4 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      bottom: -100px;
+      left: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, #ddf4ec 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    #app {
+      position: relative;
+      z-index: 1;
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 0 16px 40px;
+    }
+
+    /* ── Header ── */
+    header {
+      padding: 40px 4px 20px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.1s;
+    }
+
+    .header-inner {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .logo-area h1 {
+      font-size: clamp(1.8rem, 7vw, 2.6rem);
+      font-weight: 700;
+      color: var(--sky-text);
+      letter-spacing: -0.01em;
+      line-height: 1.1;
+    }
+
+    .logo-area h1 .wave {
+      display: inline-block;
+      animation: wave 2s ease-in-out infinite;
+    }
+
+    .logo-area .subtitle {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 400;
+    }
+
+    .header-date-badge {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 8px 14px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .date-day {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--sky-text);
+      line-height: 1;
+    }
+
+    .date-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ── 進捗カード ── */
+    .progress-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-card);
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.2s;
+    }
+
+    .progress-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .stats-row {
+      display: flex;
+      gap: 14px;
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-num {
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .stat-num.sky { color: var(--sky-dark); }
+    .stat-num.mint { color: var(--mint-dark); }
+    .stat-num.total { color: var(--text-muted); }
+
+    .progress-pct {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--sky-text);
+    }
+
+    .progress-track {
+      height: 8px;
+      background: var(--bg2);
+      border-radius: var(--radius-pill);
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--sky) 0%, var(--mint) 100%);
+      border-radius: var(--radius-pill);
+      transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ── 入力エリア ── */
+    .input-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 18px 14px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.3s;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    #todo-input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 10px 14px;
+      font-size: 14px;
+      color: var(--text);
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    #todo-input::placeholder { color: var(--text-light); }
+
+    #todo-input:focus {
+      border-color: var(--sky);
+      box-shadow: 0 0 0 3px rgba(126, 200, 227, 0.2);
+    }
+
+    .add-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--sky);
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.15s, transform 0.1s;
+      flex-shrink: 0;
+    }
+
+    .add-btn:hover { background: var(--sky-dark); }
+    .add-btn:active { transform: scale(0.92); }
+
+    .add-btn svg {
+      width: 18px;
+      height: 18px;
+      stroke: #fff;
+      stroke-width: 2.5;
+    }
+
+    /* カテゴリ */
+    .row-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .chip-row {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    .chip {
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .chip:hover { border-color: var(--sky); color: var(--sky-text); }
+
+    .chip.sel-sky { background: var(--sky-light); border-color: var(--sky); color: var(--sky-text); }
+    .chip.sel-mint { background: var(--mint-light); border-color: var(--mint); color: var(--mint-text); }
+    .chip.sel-peach { background: var(--peach-light); border-color: var(--peach); color: var(--peach-text); }
+    .chip.sel-lavender { background: var(--lavender-light); border-color: var(--lavender); color: var(--lavender-text); }
+
+    /* 優先度 */
+    .pri-row {
+      display: flex;
+      gap: 6px;
+    }
+
+    .pri-chip {
+      padding: 5px 12px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+      font-weight: 500;
+    }
+
+    .pri-chip:hover { border-color: var(--sky); }
+    .pri-chip[data-p="high"].sel { background: var(--peach-light); border-color: var(--peach); color: var(--peach-text); }
+    .pri-chip[data-p="medium"].sel { background: var(--yellow-light); border-color: #e8d070; color: #8a6a10; }
+    .pri-chip[data-p="low"].sel { background: var(--mint-light); border-color: var(--mint); color: var(--mint-text); }
+
+    /* ── フィルタータブ ── */
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.35s;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 9px 8px;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: var(--sky-light);
+      border-color: var(--sky);
+      color: var(--sky-text);
+    }
+
+    /* ── Todoリスト ── */
+    #todo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.4s;
+    }
+
+    .empty-state {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px 24px;
+      text-align: center;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 12px;
+    }
+
+    .empty-text {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ── Todoアイテム ── */
+    .todo-item {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.2s, box-shadow 0.2s;
+      animation: itemIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      position: relative;
+    }
+
+    .todo-item:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-card);
+    }
+
+    /* 左のカラーバー */
+    .todo-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 12px;
+      bottom: 12px;
+      width: 4px;
+      border-radius: 0 4px 4px 0;
+      background: var(--sky);
+      transition: background 0.2s;
+    }
+
+    .todo-item.cat-仕事::before { background: var(--sky); }
+    .todo-item.cat-個人::before { background: var(--lavender); }
+    .todo-item.cat-買い物::before { background: var(--mint); }
+    .todo-item.cat-その他::before { background: var(--peach); }
+
+    .todo-item.done {
+      opacity: 0.55;
+      background: var(--surface2);
+    }
+
+    .todo-item.done:hover {
+      transform: none;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .todo-item.removing {
+      animation: itemOut 0.3s ease forwards;
+    }
+
+    /* チェックボタン */
+    .check-btn {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      border: 2px solid var(--border2);
+      background: var(--surface2);
+      cursor: pointer;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      margin-top: 1px;
+    }
+
+    .check-btn:hover {
+      border-color: var(--sky);
+      background: var(--sky-light);
+    }
+
+    .todo-item.done .check-btn {
+      background: var(--mint);
+      border-color: var(--mint);
+    }
+
+    .check-btn svg {
+      width: 12px;
+      height: 12px;
+      stroke: #fff;
+      stroke-width: 3;
+      opacity: 0;
+      transition: opacity 0.15s;
+    }
+
+    .todo-item.done .check-btn svg { opacity: 1; }
+
+    /* テキストエリア */
+    .todo-content { flex: 1; min-width: 0; }
+
+    .todo-text {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.5;
+      word-break: break-word;
+      transition: all 0.2s;
+    }
+
+    .todo-item.done .todo-text {
+      text-decoration: line-through;
+      color: var(--text-light);
+    }
+
+    .todo-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .meta-tag {
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: var(--radius-pill);
+      font-weight: 500;
+    }
+
+    .meta-cat-仕事 { background: var(--sky-light); color: var(--sky-text); }
+    .meta-cat-個人 { background: var(--lavender-light); color: var(--lavender-text); }
+    .meta-cat-買い物 { background: var(--mint-light); color: var(--mint-text); }
+    .meta-cat-その他 { background: var(--peach-light); color: var(--peach-text); }
+
+    .meta-pri-high { background: var(--peach-light); color: var(--peach-text); }
+    .meta-pri-medium { background: var(--yellow-light); color: #8a6a10; }
+    .meta-pri-low { background: var(--mint-light); color: var(--mint-text); }
+
+    .meta-date {
+      font-size: 11px;
+      color: var(--text-light);
+    }
+
+    /* 削除ボタン */
+    .todo-actions {
+      flex-shrink: 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .todo-item:hover .todo-actions { opacity: 1; }
+
+    @media (max-width: 480px) {
+      .todo-actions { opacity: 1; }
+    }
+
+    .del-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      border: 1.5px solid var(--border);
+      background: var(--surface2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .del-btn:hover {
+      background: var(--peach-light);
+      border-color: var(--peach);
+    }
+
+    .del-btn svg {
+      width: 13px;
+      height: 13px;
+      stroke: var(--text-light);
+      stroke-width: 2;
+      transition: stroke 0.15s;
+    }
+
+    .del-btn:hover svg { stroke: var(--peach-text); }
+
+    /* ── フッター ── */
+    footer {
+      padding: 24px 4px 0;
+      display: flex;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.5s;
+    }
+
+    .clear-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-pill);
+      padding: 8px 20px;
+      font-family: inherit;
+      font-size: 12px;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clear-btn:hover {
+      border-color: var(--peach);
+      color: var(--peach-text);
+      background: var(--peach-light);
+    }
+
+    /* ── オフラインバナー ── */
+    #offline-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 200;
+      background: var(--peach-light);
+      color: var(--peach-text);
+      border-bottom: 1px solid var(--peach);
+      text-align: center;
+      padding: 9px 16px;
+      font-size: 12px;
+      font-weight: 500;
+      transform: translateY(-100%);
+      transition: transform 0.3s;
+    }
+
+    #offline-banner.show { transform: translateY(0); }
+
+    /* ── インストールバナー ── */
+    #install-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      opacity: 0;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 32px rgba(100, 180, 210, 0.22);
+      z-index: 100;
+      transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.45s;
+      white-space: nowrap;
+    }
+
+    #install-banner.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .install-text { font-size: 13px; color: var(--text-muted); }
+
+    .install-btn {
+      padding: 7px 16px;
+      background: var(--sky);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .install-btn:hover { background: var(--sky-dark); }
+
+    .install-close {
+      background: none;
+      border: none;
+      color: var(--text-light);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+    }
+
+    /* ── アニメーション ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes itemIn {
+      from { opacity: 0; transform: scale(0.96) translateY(6px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @keyframes itemOut {
+      to { opacity: 0; transform: translateX(16px) scale(0.95); max-height: 0; margin: 0; padding: 0; border: 0; }
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(12deg); }
+      75% { transform: rotate(-8deg); }
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+  </style>
+</head>
+<body>
+
+<div id="offline-banner">📡 オフラインです — データはローカルに保存されています</div>
+
+<div id="app">
+  <header>
+    <div class="header-inner">
+      <div class="logo-area">
+        <h1>ふわっと<span class="wave">☁</span>TODO</h1>
+        <div class="subtitle" id="header-date"></div>
+      </div>
+      <div class="header-date-badge">
+        <div class="date-day" id="date-day">--</div>
+        <div class="date-label" id="date-label">--</div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 進捗 -->
+  <div class="progress-card">
+    <div class="progress-top">
+      <div class="stats-row">
+        <div class="stat">
+          <div class="stat-num sky" id="stat-active">0</div>
+          <div class="stat-label">残り</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num mint" id="stat-done">0</div>
+          <div class="stat-label">完了</div>
+        </div>
+        <div class="stat">
+          <div class="stat-num total" id="stat-total">0</div>
+          <div class="stat-label">合計</div>
+        </div>
+      </div>
+      <div class="progress-pct" id="pct">0%</div>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="prog-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- 入力 -->
+  <div class="input-card">
+    <div class="input-row">
+      <input type="text" id="todo-input" placeholder="やることを入力してね ✏️" maxlength="200" autocomplete="off" autocorrect="off" spellcheck="false">
+      <button class="add-btn" id="add-btn" aria-label="追加">
+        <svg viewBox="0 0 24 24" fill="none"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      </button>
+    </div>
+
+    <div class="row-label">カテゴリ</div>
+    <div class="chip-row" id="cat-chips">
+      <button class="chip sel-sky" data-cat="仕事">💼 仕事</button>
+      <button class="chip" data-cat="個人">🌸 個人</button>
+      <button class="chip" data-cat="買い物">🛍 買い物</button>
+      <button class="chip" data-cat="その他">✨ その他</button>
+    </div>
+
+    <div class="row-label">優先度</div>
+    <div class="pri-row" id="pri-chips">
+      <button class="pri-chip" data-p="high">🔴 高め</button>
+      <button class="pri-chip sel" data-p="medium">🟡 ふつう</button>
+      <button class="pri-chip" data-p="low">🟢 低め</button>
+    </div>
+  </div>
+
+  <!-- フィルター -->
+  <div class="filter-tabs">
+    <button class="tab-btn active" data-f="all">📋 すべて</button>
+    <button class="tab-btn" data-f="active">⏳ 未完了</button>
+    <button class="tab-btn" data-f="done">✅ 完了</button>
+  </div>
+
+  <!-- リスト -->
+  <div id="todo-list"></div>
+
+  <footer>
+    <button class="clear-btn" id="clear-btn">完了済みをまとめて削除</button>
+  </footer>
+</div>
+
+<div id="install-banner">
+  <span class="install-text">ホーム画面に追加する？</span>
+  <button class="install-btn" id="install-btn">追加する</button>
+  <button class="install-close" id="install-close">✕</button>
+</div>
+
+<script>
+  // ── State ──
+  let todos = JSON.parse(localStorage.getItem('fuwatto-todos') || '[]');
+  let filter = 'all';
+  let selCat = '仕事';
+  let selPri = 'medium';
+  let deferredPrompt = null;
+
+  // ── 日付 ──
+  const DAYS = ['日','月','火','水','木','金','土'];
+  const now = new Date();
+  const mm = String(now.getMonth()+1).padStart(2,'0');
+  const dd = String(now.getDate()).padStart(2,'0');
+  document.getElementById('header-date').textContent = `${now.getFullYear()}年${mm}月${dd}日 (${DAYS[now.getDay()]}曜日)`;
+  document.getElementById('date-day').textContent = dd;
+  document.getElementById('date-label').textContent = `${DAYS[now.getDay()]}曜日`;
+
+  // ── Save ──
+  function save() { localStorage.setItem('fuwatto-todos', JSON.stringify(todos)); }
+
+  // ── Render ──
+  function render() {
+    const active = todos.filter(t => !t.done).length;
+    const done   = todos.filter(t => t.done).length;
+    const total  = todos.length;
+    document.getElementById('stat-active').textContent = active;
+    document.getElementById('stat-done').textContent   = done;
+    document.getElementById('stat-total').textContent  = total;
+    const pct = total === 0 ? 0 : Math.round(done / total * 100);
+    document.getElementById('pct').textContent = pct + '%';
+    document.getElementById('prog-fill').style.width = pct + '%';
+
+    let list = todos;
+    if (filter === 'active') list = todos.filter(t => !t.done);
+    if (filter === 'done')   list = todos.filter(t => t.done);
+
+    const el = document.getElementById('todo-list');
+    if (list.length === 0) {
+      const empty = { all:'📋 タスクがないよ〜', active:'🎉 全部終わった！', done:'まだ完了なし' };
+      el.innerHTML = `<div class="empty-state"><div class="empty-icon">${filter==='active'?'🎊':filter==='done'?'📝':'🌸'}</div><div class="empty-text">${empty[filter]}</div></div>`;
+      return;
+    }
+
+    el.innerHTML = list.map(t => `
+      <div class="todo-item cat-${t.category} ${t.done?'done':''}" data-id="${t.id}">
+        <button class="check-btn" onclick="toggle('${t.id}')" aria-label="完了切替">
+          <svg viewBox="0 0 24 24" fill="none"><polyline points="20 6 9 17 4 12"/></svg>
+        </button>
+        <div class="todo-content">
+          <div class="todo-text">${esc(t.text)}</div>
+          <div class="todo-meta">
+            <span class="meta-tag meta-cat-${t.category}">${t.category}</span>
+            <span class="meta-tag meta-pri-${t.priority}">${{high:'高め',medium:'ふつう',low:'低め'}[t.priority]}</span>
+            <span class="meta-date">${fmtDate(t.createdAt)}</span>
+          </div>
+        </div>
+        <div class="todo-actions">
+          <button class="del-btn" onclick="del('${t.id}')" aria-label="削除">
+            <svg viewBox="0 0 24 24" fill="none"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </div>
+      </div>`).join('');
+  }
+
+  function esc(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function fmtDate(ts) {
+    const d = new Date(ts);
+    return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  }
+
+  // ── Actions ──
+  function addTodo() {
+    const inp = document.getElementById('todo-input');
+    const text = inp.value.trim();
+    if (!text) { inp.focus(); return; }
+    todos.unshift({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      text, done: false,
+      priority: selPri,
+      category: selCat,
+      createdAt: Date.now()
+    });
+    save(); inp.value = '';
+    if (filter === 'done') setFilter('all');
+    else render();
+  }
+
+  function toggle(id) {
+    const t = todos.find(t => t.id === id);
+    if (t) { t.done = !t.done; save(); render(); }
+  }
+
+  function del(id) {
+    const el = document.querySelector(`[data-id="${id}"]`);
+    if (el) {
+      el.classList.add('removing');
+      el.addEventListener('animationend', () => {
+        todos = todos.filter(t => t.id !== id);
+        save(); render();
+      });
+    }
+  }
+
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.f === f));
+    render();
+  }
+
+  // カテゴリ
+  const CAT_SEL_MAP = {'仕事':'sel-sky','個人':'sel-lavender','買い物':'sel-mint','その他':'sel-peach'};
+  document.getElementById('cat-chips').addEventListener('click', e => {
+    const btn = e.target.closest('[data-cat]');
+    if (!btn) return;
+    document.querySelectorAll('[data-cat]').forEach(b => b.className = 'chip');
+    btn.classList.add('chip', CAT_SEL_MAP[btn.dataset.cat]);
+    selCat = btn.dataset.cat;
+  });
+
+  // 優先度
+  document.getElementById('pri-chips').addEventListener('click', e => {
+    const btn = e.target.closest('[data-p]');
+    if (!btn) return;
+    document.querySelectorAll('[data-p]').forEach(b => b.classList.remove('sel'));
+    btn.classList.add('sel');
+    selPri = btn.dataset.p;
+  });
+
+  document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => setFilter(b.dataset.f)));
+
+  document.getElementById('add-btn').addEventListener('click', addTodo);
+  document.getElementById('todo-input').addEventListener('keydown', e => { if (e.key === 'Enter') addTodo(); });
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    todos = todos.filter(t => !t.done); save(); render();
+  });
+
+  // ── Online/Offline ──
+  const offBanner = document.getElementById('offline-banner');
+  function chkOnline() { offBanner.classList.toggle('show', !navigator.onLine); }
+  window.addEventListener('online', chkOnline);
+  window.addEventListener('offline', chkOnline);
+  chkOnline();
+
+  // ── PWA Install ──
+  const instBanner = document.getElementById('install-banner');
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    setTimeout(() => instBanner.classList.add('show'), 2500);
+  });
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    deferredPrompt = null;
+    instBanner.classList.remove('show');
+  });
+  document.getElementById('install-close').addEventListener('click', () => instBanner.classList.remove('show'));
+
+  // ── Service Worker ──
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./serviceworker.js')
+      .then(r => console.log('[SW] OK:', r.scope))
+      .catch(e => console.warn('[SW] NG:', e));
+  }
+
+  // ── Init ──
+  render();
+</script>
+</body>
+</html>
