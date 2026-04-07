@@ -703,8 +703,8 @@
 
     <!-- フィルター -->
     <div class="filter-tabs">
-      <button class="tab-btn" data-f="all">📋 すべて</button>
-      <button class="tab-btn active" data-f="active">⏳ 未完了</button>
+      <button class="tab-btn active" data-f="all">📋 すべて</button>
+      <button class="tab-btn" data-f="active">⏳ 未完了</button>
       <button class="tab-btn" data-f="done">✅ 完了</button>
     </div>
 
@@ -811,8 +811,8 @@
 
     <!-- フィルター -->
     <div class="filter-tabs" id="filter-tabs-tasks">
-      <button class="tab-btn" data-f="all">📋 すべて</button>
-      <button class="tab-btn" active data-f="active">⏳ 未完了</button>
+      <button class="tab-btn active" data-f="all">📋 すべて</button>
+      <button class="tab-btn" data-f="active">⏳ 未完了</button>
       <button class="tab-btn" data-f="done">✅ 完了</button>
       <button class="tab-btn" data-f="overdue">⚠️ 期限切れ</button>
     </div>
@@ -878,8 +878,8 @@ let todos   = JSON.parse(localStorage.getItem(STORE_TODOS)   || '[]');
 let goals   = JSON.parse(localStorage.getItem(STORE_GOALS)   || '{"short":"","mid":"","long":"","shortDeadline":"","midDeadline":"","longDeadline":""}');
 let records = JSON.parse(localStorage.getItem(STORE_RECORDS) || '[]');
 
-let filter   = 'all';
-let filterT  = 'all'; // tasks view filter
+let filter   = 'filter';
+let filterT  = 'filter'; // tasks view filter
 let selCat   = '仕事';
 let selPri   = 'medium';
 let selGoalLink = 'none';
