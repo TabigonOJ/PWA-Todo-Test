@@ -1,7 +1,7 @@
 {
-  "name": "ふわっとTODO",
-  "short_name": "ふわっとTODO",
-  "description": "シンプルで美しいTodoリスト管理アプリ",
+  "name": "モチベTODO",
+  "short_name": "モチベTODO",
+  "description": "短期・中期・長期の目標を管理し、継続的なモチベーションを支援するアプリ",
   "lang": "ja",
   "start_url": "./index.html",
   "display": "standalone",
@@ -23,7 +23,6 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "新しいタスクを追加",
