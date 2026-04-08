@@ -1,24 +1,17 @@
-// TASK Todo App - Service Worker
-const CACHE_NAME = 'task-todo-v1';
-const ASSETS = [
-  '/',
-  '/index.html',
-  '/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+JP:wght@300;400;500;700&display=swap'
-];
+// モチベTODO - Service Worker (Network-First)
+const CACHE_NAME = 'motitodo-v2';
 
-// ── Install: キャッシュ構築 ──
+// ── Install: 最低限のキャッシュのみ ──
 self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      // 必須ファイルのみキャッシュ（外部フォントは失敗してもOK）
-      return cache.addAll(['./index.html', './manifest.json']).catch(() => {});
-    })
+    caches.open(CACHE_NAME).then(cache =>
+      cache.addAll(['./index.html', './manifest.json']).catch(() => {})
+    )
   );
   self.skipWaiting();
 });
 
-// ── Activate: 古いキャッシュ削除 ──
+// ── Activate: 古いキャッシュを削除 ──
 self.addEventListener('activate', event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -28,7 +21,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// ── Fetch: Cache-First with Network Fallback ──
+// ── Fetch ──
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
@@ -47,17 +40,16 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 同一オリジン: Cache-First
+  // HTML / JS / CSS: Network-First → オフライン時のみキャッシュにフォールバック
   if (url.origin === location.origin) {
     event.respondWith(
-      caches.match(request).then(cached => {
-        if (cached) return cached;
-        return fetch(request).then(res => {
+      fetch(request)
+        .then(res => {
           const clone = res.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
           return res;
-        });
-      })
+        })
+        .catch(() => caches.match(request))
     );
   }
 });
