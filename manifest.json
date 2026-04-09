@@ -1,13 +1,14 @@
 {
-  "name": "ふわっとTODO",
-  "short_name": "ふわっとTODO",
-  "description": "シンプルで美しいTodoリスト管理アプリ",
+  "name": "モチベTODO",
+  "short_name": "モチベTODO",
+  "description": "短期・中期・長期の目標を管理し、継続的なモチベーションを支援するアプリ",
   "lang": "ja",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#eaf6fb",
-  "theme_color": "#eaf6fb",
+  "theme_color": "#7ec8e3",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
@@ -23,13 +24,12 @@
       "purpose": "any maskable"
     }
   ],
-  "screenshots": [],
   "shortcuts": [
     {
       "name": "新しいタスクを追加",
       "short_name": "追加",
       "description": "タスク入力欄にフォーカス",
-      "url": "/index.html#add"
+      "url": "./index.html"
     }
   ]
 }

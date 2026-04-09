@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <!-- 背景 -->
+  <rect width="192" height="192" rx="40" fill="#eef8fc"/>
+  <!-- メインサークル -->
+  <circle cx="96" cy="96" r="72" fill="#7ec8e3" opacity="0.25"/>
+  <!-- チェックリストアイコン -->
+  <rect x="52" y="54" width="88" height="12" rx="6" fill="#4da8cc"/>
+  <rect x="52" y="78" width="88" height="12" rx="6" fill="#a8ddc9"/>
+  <rect x="52" y="102" width="64" height="12" rx="6" fill="#c4b5e8"/>
+  <rect x="52" y="126" width="44" height="12" rx="6" fill="#f9c6b4"/>
+  <!-- チェックマーク -->
+  <circle cx="134" cy="108" r="22" fill="#5eb89a"/>
+  <polyline points="124,108 131,116 145,100" stroke="white" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- 葉っぱ装飾 -->
+  <circle cx="40" cy="48" r="8" fill="#a8ddc9" opacity="0.5"/>
+  <circle cx="152" cy="48" r="6" fill="#7ec8e3" opacity="0.5"/>
+</svg>
