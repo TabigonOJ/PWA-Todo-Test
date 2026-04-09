@@ -8,7 +8,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="モチベTODO">
-  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
   <title>モチベTODO</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -126,6 +125,8 @@
     .nav-tab.active {
       background:var(--sky-light); color:var(--sky-text);
     }
+    .date-day { font-size:22px; font-weight:700; color:var(--sky-text); line-height:1; }
+    .date-label { font-size:11px; color:var(--text-muted); margin-top:2px; }
 
     /* ── VIEWS ── */
     .view { display:none; }
@@ -1482,7 +1483,7 @@ if ('serviceWorker' in navigator) {
 // ══════════════════════════════════════════════════════
 //  AI GOAL ASSIST
 // ══════════════════════════════════════════════════════
-document.getElementById('ai-assist-btn').addEventListener('click', () => {
+document.getElementById('ai-assist-btn').addEventListener('click', async () => {
   const longGoal = document.getElementById('goal-long').value.trim();
   if (!longGoal) {
     alert('まず長期目標を入力してください 📙');
@@ -1493,91 +1494,43 @@ document.getElementById('ai-assist-btn').addEventListener('click', () => {
   const btn = document.getElementById('ai-assist-btn');
   const area = document.getElementById('ai-result-area');
   btn.disabled = true;
-  area.innerHTML = `<div class="ai-loading"><div class="ai-spinner"></div>目標を分析中...</div>`;
+  area.innerHTML = `<div class="ai-loading"><div class="ai-spinner"></div>AIが目標を分解中...</div>`;
 
-  // ルールベース提案エンジン（オフライン動作）
-  setTimeout(() => {
-    const result = suggestGoals(longGoal);
-    renderAiResult(result);
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{
+          role: 'user',
+          content: `ユーザーの長期目標は「${longGoal}」です。
+この長期目標を達成するために、中期目標（1〜6ヶ月）を2〜3個、短期目標（〜1ヶ月）を2〜3個、逆算して提案してください。
+
+以下のJSON形式のみで回答してください。前置きや説明は不要です。
+{
+  "mid": ["中期目標1", "中期目標2", "中期目標3"],
+  "short": ["短期目標1", "短期目標2", "短期目標3"]
+}`
+        }]
+      })
+    });
+
+    const data = await res.json();
+    const text = data.content?.find(c => c.type === 'text')?.text || '';
+    const cleaned = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(cleaned);
+
+    renderAiResult(parsed, longGoal);
+  } catch (e) {
+    area.innerHTML = `<div class="ai-result-card"><div style="color:var(--peach-text);font-size:13px">⚠️ 提案の取得に失敗しました。もう一度お試しください。</div></div>`;
+  } finally {
     btn.disabled = false;
-  }, 600);
+  }
 });
 
-// ── キーワードベースの目標分解エンジン ──
-function suggestGoals(longGoal) {
-  const t = longGoal;
-
-  const rules = [
-    {
-      keys: ['転職','就職','採用','内定','キャリア'],
-      mid:  ['志望業界・職種の求人を20社リサーチする','職務経歴書・履歴書を完成させる','OB/OG訪問を3人行う'],
-      short:['自分の強みと弱みをA4一枚にまとめる','転職サイトに登録して求人を眺める','現職での実績を数字で整理する']
-    },
-    {
-      keys: ['英語','TOEIC','TOEFL','英会話','外国語','語学'],
-      mid:  ['TOEIC公式問題集を2冊仕上げる','オンライン英会話を週3回のペースで続ける','英語日記を毎日書く習慣をつける'],
-      short:['現在のスコアを把握するために模擬試験を受ける','単語帳アプリで毎日10単語覚える','好きな洋画を英語字幕で1本観る']
-    },
-    {
-      keys: ['資格','検定','試験','合格','取得'],
-      mid:  ['テキストを1周して全体像を把握する','過去問を3年分解いて弱点を洗い出す','苦手分野だけ集中して復習する'],
-      short:['試験日程と出題範囲を調べてまとめる','学習スケジュールを手帳やアプリに書く','参考書を1冊選んで購入する']
-    },
-    {
-      keys: ['副業','フリーランス','起業','開業','個人事業'],
-      mid:  ['副業の収益目標と事業計画を紙に書く','SNSかポートフォリオサイトを開設する','月1件以上の案件獲得を目指す'],
-      short:['副業の選択肢を5つ調べてメリット・デメリットを比較する','クラウドソーシングに登録してみる','本業後の作業可能時間を計算する']
-    },
-    {
-      keys: ['筋肉','筋トレ','ダイエット','体重','痩せ','健康','運動','ジム','体脂肪'],
-      mid:  ['週3回のトレーニングを3ヶ月継続する','食事記録アプリで摂取カロリーを管理する','ジムまたは自宅トレーニング環境を整える'],
-      short:['現在の体重・体脂肪を記録する','1週間の食事内容を書き出してみる','10分の散歩を毎日の習慣にする']
-    },
-    {
-      keys: ['プログラミング','開発','エンジニア','コーディング','アプリ','web','Web'],
-      mid:  ['学習中の言語で小さなアプリを1つ完成させる','GitHubに週3回以上コミットする習慣をつける','技術ブログを月2本書いて発信する'],
-      short:['作りたいものを1つ決めてロードマップを書く','オンライン学習サービスに登録して最初の章を終える','プログラミング仲間やコミュニティを探す']
-    },
-    {
-      keys: ['貯金','節約','投資','お金','資産','FIRE','financial'],
-      mid:  ['月々の収支を家計簿アプリで把握する','固定費（サブスク・保険等）を見直す','積立NISAや投資口座を開設する'],
-      short:['現在の資産・負債を全部書き出す','1ヶ月の無駄遣いトップ3を特定する','目標金額と期間から月の積立額を計算する']
-    },
-    {
-      keys: ['読書','本','読む','インプット','勉強'],
-      mid:  ['月4冊を目標に読書記録をつける','読んだ本の要約をノートにまとめる','読書会やオンラインサロンに参加する'],
-      short:['積読リストを整理して次の1冊を決める','毎日寝る前15分の読書タイムを確保する','読書メモ用のノートかアプリを用意する']
-    },
-    {
-      keys: ['人間関係','コミュニケーション','友達','ネットワーク','人脈'],
-      mid:  ['月1回は新しい人に会う機会を作る','既存のつながりに定期的に連絡する','興味あるコミュニティやイベントに参加する'],
-      short:['今の人間関係を書き出して大切にしたい人を確認する','SNSのプロフィールを整理・更新する','気になるイベントや勉強会を1つ探す']
-    },
-  ];
-
-  // キーワードマッチ
-  for (const rule of rules) {
-    if (rule.keys.some(k => t.includes(k))) {
-      return { mid: rule.mid, short: rule.short };
-    }
-  }
-
-  // デフォルト（汎用）
-  return {
-    mid: [
-      `「${t}」に向けた具体的な行動計画を立てて実行する`,
-      '進捗を定期的に振り返り、やり方を調整する',
-      '同じ目標を持つ人や情報源を見つけて学ぶ'
-    ],
-    short: [
-      `「${t}」を達成した状態を具体的にイメージして書き出す`,
-      '今すぐできる小さな一歩を1つ実行する',
-      '目標達成に必要なリソース（時間・お金・スキル）を整理する'
-    ]
-  };
-}
-
-function renderAiResult(parsed) {
+function renderAiResult(parsed, longGoal) {
   const area = document.getElementById('ai-result-area');
   const midItems  = (parsed.mid   || []).slice(0, 3);
   const shortItems = (parsed.short || []).slice(0, 3);
