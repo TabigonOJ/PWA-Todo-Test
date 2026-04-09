@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="モチベTODO">
+  <link rel="apple-touch-icon" href="./icons/icon-192.svg">
   <title>モチベTODO</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -125,8 +126,6 @@
     .nav-tab.active {
       background:var(--sky-light); color:var(--sky-text);
     }
-    .date-day { font-size:22px; font-weight:700; color:var(--sky-text); line-height:1; }
-    .date-label { font-size:11px; color:var(--text-muted); margin-top:2px; }
 
     /* ── VIEWS ── */
     .view { display:none; }
@@ -610,6 +609,121 @@
     ::-webkit-scrollbar { width:4px; }
     ::-webkit-scrollbar-track { background:transparent; }
     ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+    /* ── Goal Tree ── */
+    .goal-tree-empty {
+      text-align:center; padding:32px 16px;
+      background:var(--surface); border:1.5px dashed var(--border);
+      border-radius:var(--radius); margin-bottom:12px;
+      color:var(--text-muted); font-size:13px;
+    }
+
+    /* 長期カード */
+    .gcard-long {
+      background:var(--surface); border:1.5px solid var(--lavender);
+      border-radius:var(--radius); margin-bottom:14px;
+      box-shadow:var(--shadow-card);
+      animation:fadeUp 0.45s ease forwards; opacity:0;
+    }
+    .gcard-long-header {
+      display:flex; align-items:center; gap:10px;
+      padding:14px 16px 10px;
+      border-bottom:1px solid var(--lavender-light);
+    }
+    .gcard-long-icon { font-size:20px; }
+    .gcard-long-body { flex:1; min-width:0; }
+    .gcard-long-label { font-size:10px; font-weight:700; color:var(--lavender-text); letter-spacing:0.05em; }
+    .gcard-long-text  { font-size:14px; font-weight:700; color:var(--text); line-height:1.3; }
+    .gcard-long-dl    { font-size:11px; color:var(--text-light); margin-top:2px; }
+    .gcard-long-stats { font-size:11px; color:var(--mint-text); font-weight:700; margin-top:2px; }
+    .gcard-long-actions { display:flex; gap:6px; flex-shrink:0; }
+    .gcard-del-btn {
+      width:28px; height:28px; border-radius:8px;
+      border:1.5px solid var(--border); background:var(--surface2);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:12px; transition:all 0.15s;
+    }
+    .gcard-del-btn:hover { background:var(--peach-light); border-color:var(--peach); }
+
+    /* 中期ブロック */
+    .gcard-mids { padding:0 14px 8px; }
+    .gcard-mid {
+      border:1.5px solid var(--mint); border-radius:var(--radius-sm);
+      margin-top:10px; background:var(--mint-light);
+    }
+    .gcard-mid-header {
+      display:flex; align-items:center; gap:8px;
+      padding:10px 12px 8px;
+    }
+    .gcard-mid-label { font-size:10px; font-weight:700; color:var(--mint-text); letter-spacing:0.05em; }
+    .gcard-mid-text  { font-size:13px; font-weight:700; color:var(--text); flex:1; }
+    .gcard-mid-dl    { font-size:11px; color:var(--text-light); }
+    .gcard-mid-stats { font-size:11px; color:var(--mint-text); font-weight:700; }
+
+    /* 短期ブロック */
+    .gcard-shorts { padding:0 12px 8px 28px; }
+    .gcard-short {
+      display:flex; align-items:center; gap:8px;
+      padding:7px 10px; border-radius:8px;
+      background:var(--sky-light); border:1.5px solid var(--sky);
+      margin-top:6px;
+    }
+    .gcard-short-label { font-size:10px; font-weight:700; color:var(--sky-text); flex-shrink:0; }
+    .gcard-short-text  { font-size:12px; color:var(--text); flex:1; }
+    .gcard-short-dl    { font-size:11px; color:var(--text-light); }
+    .gcard-short-stats { font-size:11px; color:var(--sky-text); font-weight:700; }
+
+    /* ＋追加ボタン（インライン） */
+    .gcard-add-btn {
+      width:100%; margin-top:8px; padding:7px;
+      background:none; border:1.5px dashed var(--border2);
+      border-radius:var(--radius-sm); font-family:inherit;
+      font-size:12px; color:var(--text-muted); cursor:pointer;
+      transition:all 0.15s; text-align:center;
+    }
+    .gcard-add-btn:hover { background:var(--sky-light); border-color:var(--sky); color:var(--sky-text); }
+
+    /* インライン追加フォーム */
+    .inline-form {
+      padding:10px; background:var(--surface);
+      border:1.5px solid var(--sky); border-radius:var(--radius-sm);
+      margin-top:8px; animation:fadeUp 0.25s ease forwards;
+    }
+    .inline-form input[type=text] {
+      width:100%; background:var(--surface2);
+      border:1.5px solid var(--border); border-radius:8px;
+      padding:8px 12px; font-size:13px; color:var(--text);
+      font-family:inherit; outline:none; margin-bottom:6px;
+    }
+    .inline-form input[type=text]:focus { border-color:var(--sky); }
+    .inline-form input[type=date] {
+      width:100%; background:var(--surface2);
+      border:1.5px solid var(--border); border-radius:8px;
+      padding:6px 10px; font-size:12px; color:var(--text);
+      font-family:inherit; outline:none; margin-bottom:8px;
+    }
+    .inline-form-btns { display:flex; gap:6px; }
+    .inline-form-ok {
+      flex:1; padding:7px; background:var(--sky); border:none;
+      border-radius:8px; font-family:inherit; font-size:12px;
+      font-weight:700; color:#fff; cursor:pointer; transition:background 0.15s;
+    }
+    .inline-form-ok:hover { background:var(--sky-dark); }
+    .inline-form-cancel {
+      padding:7px 12px; background:none;
+      border:1.5px solid var(--border); border-radius:8px;
+      font-family:inherit; font-size:12px; color:var(--text-muted);
+      cursor:pointer; transition:all 0.15s;
+    }
+    .inline-form-cancel:hover { border-color:var(--peach); color:var(--peach-text); }
+
+    /* 孤立中期（長期に属さない） */
+    .gcard-orphan-mid {
+      background:var(--surface); border:1.5px solid var(--mint);
+      border-radius:var(--radius); margin-bottom:14px;
+      box-shadow:var(--shadow-soft);
+      animation:fadeUp 0.45s ease forwards; opacity:0;
+    }
+
     /* ── AI Goal Assist ── */
     .ai-assist-btn {
       width:100%; margin-top:10px; padding:10px 16px;
@@ -747,10 +861,7 @@
       </div>
       <div class="row-label">目標と紐づける</div>
       <div class="chip-row" id="goal-link-chips-home">
-        <button class="chip sel-goal-none" data-goal="none">なし</button>
-        <button class="chip" data-goal="short">📘 短期</button>
-        <button class="chip" data-goal="mid">📗 中期</button>
-        <button class="chip" data-goal="long">📙 長期</button>
+        <button class="chip sel-goal-none" data-goalid="">紐づけなし</button>
       </div>
       <div class="row-label">優先度</div>
       <div class="pri-row" id="pri-chips-home">
@@ -775,64 +886,28 @@
 
   <!-- ───── GOALS VIEW ───── -->
   <div id="view-goals" class="view">
-    <div class="goal-set-card">
-      <div class="goal-set-title">🎯 目標を設定する</div>
-      <div class="goal-item-row">
-        <div class="goal-badge short">📘</div>
-        <div class="goal-input-wrap">
-          <div class="goal-type-label short">短期目標（〜1ヶ月）</div>
-          <input type="text" id="goal-short" class="goal-text-input" placeholder="例：TOEICで700点取る">
-          <input type="date" id="goal-short-deadline" class="goal-text-input" style="margin-top:4px">
-        </div>
-      </div>
-      <div class="goal-item-row">
-        <div class="goal-badge mid">📗</div>
-        <div class="goal-input-wrap">
-          <div class="goal-type-label mid">中期目標（1〜6ヶ月）</div>
-          <input type="text" id="goal-mid" class="goal-text-input" placeholder="例：英語で日常会話ができる">
-          <input type="date" id="goal-mid-deadline" class="goal-text-input" style="margin-top:4px">
-        </div>
-      </div>
-      <div class="goal-item-row">
-        <div class="goal-badge long">📙</div>
-        <div class="goal-input-wrap">
-          <div class="goal-type-label long">長期目標（6ヶ月〜）</div>
-          <input type="text" id="goal-long" class="goal-text-input" placeholder="例：外資系企業に転職する">
-          <input type="date" id="goal-long-deadline" class="goal-text-input" style="margin-top:4px">
-        </div>
-      </div>
+    <!-- ツリー（長期→中期→短期を展開表示） -->
+    <div id="goal-tree-area"></div>
 
-      <!-- AI アシスト -->
-      <button class="ai-assist-btn" id="ai-assist-btn">
-        ✨ AIが中期・短期目標を逆算して提案する
+    <!-- 長期目標追加フォーム（常時表示） -->
+    <div class="goal-set-card">
+      <div class="goal-set-title">📙 長期目標を追加する</div>
+      <div class="goal-item-row">
+        <div class="goal-input-wrap">
+          <input type="text" id="goal-new-long-text" class="goal-text-input" placeholder="例：外資系企業に転職する">
+          <input type="date" id="goal-new-long-deadline" class="goal-text-input" style="margin-top:6px">
+        </div>
+      </div>
+      <button class="ai-assist-btn" id="ai-assist-btn" style="margin-top:10px">
+        💡 テンプレート提案を見る
       </button>
       <div id="ai-result-area"></div>
-
-      <button class="goal-save-btn" id="goal-save-btn" style="margin-top:10px">✨ 目標を保存する</button>
+      <button class="goal-save-btn" id="goal-add-long-btn" style="margin-top:10px">📙 長期目標を追加</button>
     </div>
 
-    <!-- 目標別進捗 -->
-    <div class="goal-progress-section" id="goal-progress-section">
-      <div class="goal-set-title" style="margin-bottom:10px">📊 目標別の達成率</div>
-      <div class="goal-prog-row">
-        <div class="goal-prog-label short">短期</div>
-        <div class="goal-prog-text" id="gp-short-text">未設定</div>
-        <div class="mini-track"><div class="mini-fill short" id="gp-short-bar" style="width:0%"></div></div>
-        <div class="goal-prog-pct" id="gp-short-pct">0%</div>
-      </div>
-      <div class="goal-prog-row">
-        <div class="goal-prog-label mid">中期</div>
-        <div class="goal-prog-text" id="gp-mid-text">未設定</div>
-        <div class="mini-track"><div class="mini-fill mid" id="gp-mid-bar" style="width:0%"></div></div>
-        <div class="goal-prog-pct" id="gp-mid-pct">0%</div>
-      </div>
-      <div class="goal-prog-row">
-        <div class="goal-prog-label long">長期</div>
-        <div class="goal-prog-text" id="gp-long-text">未設定</div>
-        <div class="mini-track"><div class="mini-fill long" id="gp-long-bar" style="width:0%"></div></div>
-        <div class="goal-prog-pct" id="gp-long-pct">0%</div>
-      </div>
-    </div>
+    <!-- 中期・短期はツリー内のボタンからインライン追加 -->
+    <!-- インライン追加フォーム（JS で inject） -->
+    <div id="goal-inline-form-area"></div>
   </div>
 
   <!-- ───── TASKS VIEW ───── -->
@@ -854,10 +929,7 @@
       </div>
       <div class="row-label">目標と紐づける</div>
       <div class="chip-row" id="goal-link-chips-tasks">
-        <button class="chip sel-goal-none" data-goal="none">なし</button>
-        <button class="chip" data-goal="short">📘 短期</button>
-        <button class="chip" data-goal="mid">📗 中期</button>
-        <button class="chip" data-goal="long">📙 長期</button>
+        <button class="chip sel-goal-none" data-goalid="">紐づけなし</button>
       </div>
       <div style="display:flex;gap:10px">
         <div style="flex:1">
@@ -940,18 +1012,23 @@ const STORE_TODOS    = 'motitodo-todos';
 const STORE_GOALS    = 'motitodo-goals';
 const STORE_RECORDS  = 'motitodo-records';
 
-let todos   = JSON.parse(localStorage.getItem(STORE_TODOS)   || '[]');
-let goals   = JSON.parse(localStorage.getItem(STORE_GOALS)   || '{"short":"","mid":"","long":"","shortDeadline":"","midDeadline":"","longDeadline":""}');
-let records = JSON.parse(localStorage.getItem(STORE_RECORDS) || '[]');
+let todos      = JSON.parse(localStorage.getItem(STORE_TODOS)   || '[]');
+let goalNodes  = JSON.parse(localStorage.getItem(STORE_GOALS)   || '[]');
+let records    = JSON.parse(localStorage.getItem(STORE_RECORDS) || '[]');
+
+// 旧フォーマット移行（{short,mid,long,...} → []）
+if (!Array.isArray(goalNodes)) goalNodes = [];
 
 let filter   = 'active';
-let filterT  = 'active'; // tasks view filter
+let filterT  = 'active';
 let selCat   = '仕事';
 let selPri   = 'medium';
-let selGoalLink = 'none';
+let selGoalId    = '';   // '' = 紐づけなし
 let selCatT  = '仕事';
 let selPriT  = 'medium';
-let selGoalLinkT = 'none';
+let selGoalIdT   = '';
+let selGoalType  = 'long';  // 新規追加フォームの種別
+let selParentId  = '';      // 新規追加フォームの親
 let selMood  = '';
 let calYear, calMonth;
 let calSelectedDate = null;
@@ -974,7 +1051,7 @@ document.getElementById('date-label').textContent = DAYS[now.getDay()] + '曜日
 //  SAVE
 // ══════════════════════════════════════════════════════
 function save() { localStorage.setItem(STORE_TODOS, JSON.stringify(todos)); }
-function saveGoals() { localStorage.setItem(STORE_GOALS, JSON.stringify(goals)); }
+function saveGoals() { localStorage.setItem(STORE_GOALS, JSON.stringify(goalNodes)); }
 function saveRecords() { localStorage.setItem(STORE_RECORDS, JSON.stringify(records)); }
 
 // ══════════════════════════════════════════════════════
@@ -1015,24 +1092,42 @@ document.querySelectorAll('.nav-tab').forEach(b => b.addEventListener('click', (
 //  HOME VIEW
 // ══════════════════════════════════════════════════════
 const CAT_SEL_MAP = {'仕事':'sel-sky','個人':'sel-lavender','買い物':'sel-mint','その他':'sel-peach'};
-const GOAL_SEL_MAP = {'none':'sel-goal-none','short':'sel-goal-short','mid':'sel-goal-mid','long':'sel-goal-long'};
+const TYPE_ICON = {long:'📙', mid:'📗', short:'📘'};
+const TYPE_LABEL = {long:'長期', mid:'中期', short:'短期'};
+const TYPE_COLOR = {long:'sel-lavender', mid:'sel-mint', short:'sel-sky'};
 
-function initChips(chipRowId, selGetter, selSetter, selMap, defaultClass) {
-  document.getElementById(chipRowId).addEventListener('click', e => {
-    const btn = e.target.closest('[data-cat],[data-p],[data-goal]');
-    if (!btn) return;
-    const key = btn.dataset.cat || btn.dataset.p || btn.dataset.goal;
-    if (btn.dataset.cat !== undefined) {
-      document.querySelectorAll(`#${chipRowId} [data-cat]`).forEach(b => b.className = 'chip');
-      btn.classList.add('chip', selMap[key]);
-      selSetter(key);
-    }
-    if (btn.dataset.goal !== undefined) {
-      document.querySelectorAll(`#${chipRowId} [data-goal]`).forEach(b => b.className = 'chip');
-      btn.classList.add('chip', GOAL_SEL_MAP[key]);
-      selSetter(key);
-    }
+// ── ゴールリンクチップを動的に生成 ──
+function buildGoalLinkChips(containerId, currentGoalId, onSelect) {
+  const el = document.getElementById(containerId);
+  // 短期目標のみ選択可能
+  const shortGoals = goalNodes.filter(g => g.type === 'short');
+  const chips = [`<button class="chip ${currentGoalId==='' ? 'sel-goal-none' : ''}" data-goalid="">紐づけなし</button>`];
+  shortGoals.forEach(g => {
+    const sel = currentGoalId === g.id ? 'sel-sky' : '';
+    // 親中期・長期のパスを表示
+    const midParent  = goalNodes.find(n => n.id === g.parentId);
+    const longParent = midParent ? goalNodes.find(n => n.id === midParent.parentId) : null;
+    const pathLabel  = longParent ? `${longParent.text.slice(0,8)}… ＞ ${midParent.text.slice(0,8)}… ＞` : midParent ? `${midParent.text.slice(0,10)}… ＞` : '';
+    const label = `📘 ${esc(g.text.length>14 ? g.text.slice(0,14)+'…' : g.text)}`;
+    chips.push(`<button class="chip ${sel}" data-goalid="${g.id}" title="${pathLabel} ${esc(g.text)}">${label}</button>`);
   });
+  el.innerHTML = chips.join('');
+  // イベントは一度だけ登録（cloneで既存リスナー除去）
+  const clone = el.cloneNode(true);
+  el.parentNode.replaceChild(clone, el);
+  clone.addEventListener('click', e => {
+    const btn = e.target.closest('[data-goalid]');
+    if (!btn) return;
+    clone.querySelectorAll('[data-goalid]').forEach(b => b.className = 'chip');
+    const gid = btn.dataset.goalid;
+    btn.className = 'chip ' + (gid === '' ? 'sel-goal-none' : 'sel-sky');
+    onSelect(gid);
+  });
+}
+
+function refreshGoalLinkChips() {
+  buildGoalLinkChips('goal-link-chips-home',  selGoalId,  id => { selGoalId  = id; });
+  buildGoalLinkChips('goal-link-chips-tasks', selGoalIdT, id => { selGoalIdT = id; });
 }
 
 // category home
@@ -1042,15 +1137,6 @@ document.getElementById('cat-chips-home').addEventListener('click', e => {
   document.querySelectorAll('#cat-chips-home [data-cat]').forEach(b => b.className='chip');
   btn.classList.add('chip', CAT_SEL_MAP[btn.dataset.cat]);
   selCat = btn.dataset.cat;
-});
-
-// goal link home
-document.getElementById('goal-link-chips-home').addEventListener('click', e => {
-  const btn = e.target.closest('[data-goal]');
-  if (!btn) return;
-  document.querySelectorAll('#goal-link-chips-home [data-goal]').forEach(b => b.className='chip');
-  btn.classList.add('chip', GOAL_SEL_MAP[btn.dataset.goal]);
-  selGoalLink = btn.dataset.goal;
 });
 
 // priority home
@@ -1069,15 +1155,6 @@ document.getElementById('cat-chips-tasks').addEventListener('click', e => {
   document.querySelectorAll('#cat-chips-tasks [data-cat]').forEach(b => b.className='chip');
   btn.classList.add('chip', CAT_SEL_MAP[btn.dataset.cat]);
   selCatT = btn.dataset.cat;
-});
-
-// goal link tasks
-document.getElementById('goal-link-chips-tasks').addEventListener('click', e => {
-  const btn = e.target.closest('[data-goal]');
-  if (!btn) return;
-  document.querySelectorAll('#goal-link-chips-tasks [data-goal]').forEach(b => b.className='chip');
-  btn.classList.add('chip', GOAL_SEL_MAP[btn.dataset.goal]);
-  selGoalLinkT = btn.dataset.goal;
 });
 
 // priority tasks
@@ -1107,11 +1184,11 @@ document.getElementById('filter-tabs-tasks').addEventListener('click', e => {
   renderTasksList();
 });
 
-function makeTodo(text, cat, pri, goalLink, deadline) {
+function makeTodo(text, cat, pri, goalId, deadline) {
   return {
     id: Date.now().toString(36) + Math.random().toString(36).slice(2),
     text, done: false, priority: pri, category: cat,
-    goalLink: goalLink || 'none',
+    goalId: goalId || '',
     deadline: deadline || '',
     createdAt: Date.now(),
     doneAt: null,
@@ -1119,23 +1196,23 @@ function makeTodo(text, cat, pri, goalLink, deadline) {
   };
 }
 
-function addTodo(inputId, cat, pri, goalLink, deadlineId) {
+function addTodo(inputId, cat, pri, goalId, deadlineId) {
   const inp = document.getElementById(inputId);
   const text = inp.value.trim();
   if (!text) { inp.focus(); return; }
   const dl = deadlineId ? document.getElementById(deadlineId).value : '';
-  todos.unshift(makeTodo(text, cat, pri, goalLink, dl));
+  todos.unshift(makeTodo(text, cat, pri, goalId, dl));
   save();
   inp.value = '';
   renderHome();
   renderTasks();
-  updateGoalProgress();
+  renderGoals();
 }
 
-document.getElementById('add-btn-home').addEventListener('click', () => addTodo('todo-input-home', selCat, selPri, selGoalLink, ''));
-document.getElementById('todo-input-home').addEventListener('keydown', e => { if (e.key==='Enter') addTodo('todo-input-home', selCat, selPri, selGoalLink, ''); });
-document.getElementById('add-btn-tasks').addEventListener('click', () => addTodo('todo-input-tasks', selCatT, selPriT, selGoalLinkT, 'task-deadline'));
-document.getElementById('todo-input-tasks').addEventListener('keydown', e => { if (e.key==='Enter') addTodo('todo-input-tasks', selCatT, selPriT, selGoalLinkT, 'task-deadline'); });
+document.getElementById('add-btn-home').addEventListener('click', () => addTodo('todo-input-home', selCat, selPri, selGoalId, ''));
+document.getElementById('todo-input-home').addEventListener('keydown', e => { if (e.key==='Enter') addTodo('todo-input-home', selCat, selPri, selGoalId, ''); });
+document.getElementById('add-btn-tasks').addEventListener('click', () => addTodo('todo-input-tasks', selCatT, selPriT, selGoalIdT, 'task-deadline'));
+document.getElementById('todo-input-tasks').addEventListener('keydown', e => { if (e.key==='Enter') addTodo('todo-input-tasks', selCatT, selPriT, selGoalIdT, 'task-deadline'); });
 
 function toggle(id) {
   const t = todos.find(t => t.id===id);
@@ -1143,7 +1220,7 @@ function toggle(id) {
     t.done = !t.done;
     t.doneAt = t.done ? Date.now() : null;
     t.doneDate = t.done ? todayKey() : '';
-    save(); renderHome(); renderTasks(); updateGoalProgress();
+    save(); renderHome(); renderTasks(); renderGoals();
   }
 }
 
@@ -1153,14 +1230,14 @@ function del(id) {
     el.classList.add('removing');
     el.addEventListener('animationend', () => {
       todos = todos.filter(t => t.id!==id);
-      save(); renderHome(); renderTasks(); updateGoalProgress();
+      save(); renderHome(); renderTasks(); renderGoals();
     });
   }
 }
 
 function buildTodoItem(t) {
   const overdue = isOverdue(t);
-  const goalLabel = {'short':'📘短期','mid':'📗中期','long':'📙長期','none':''};
+  const linkedGoal = goalNodes.find(g => g.id === t.goalId);
   const priLabel  = {high:'高め',medium:'ふつう',low:'低め'};
   return `
     <div class="todo-item cat-${t.category} ${t.done?'done':''} ${overdue?'overdue':''}" data-id="${t.id}">
@@ -1172,7 +1249,7 @@ function buildTodoItem(t) {
         <div class="todo-meta">
           <span class="meta-tag meta-cat-${t.category}">${esc(t.category)}</span>
           <span class="meta-tag meta-pri-${t.priority}">${priLabel[t.priority]}</span>
-          ${t.goalLink && t.goalLink!=='none' ? `<span class="meta-tag meta-goal-${t.goalLink}">${goalLabel[t.goalLink]}</span>` : ''}
+          ${linkedGoal ? `<span class="meta-tag meta-goal-${linkedGoal.type}">${TYPE_ICON[linkedGoal.type]} ${esc(linkedGoal.text.length>12 ? linkedGoal.text.slice(0,12)+'…' : linkedGoal.text)}</span>` : ''}
           ${t.deadline ? `<span class="meta-deadline">📅 ${t.deadline}</span>` : ''}
           <span class="meta-date">${fmtDate(t.createdAt)}</span>
         </div>
@@ -1212,17 +1289,20 @@ function renderProgressCard() {
 
 function renderGoalSummary() {
   const el = document.getElementById('home-goal-summary');
-  const types = [
-    {key:'short', label:'短期目標', cls:'short', icon:'📘'},
-    {key:'mid',   label:'中期目標', cls:'mid',   icon:'📗'},
-    {key:'long',  label:'長期目標', cls:'long',  icon:'📙'},
-  ];
-  el.innerHTML = types.map(t => `
-    <div class="goal-mini-card ${t.cls}" onclick="switchView('goals')">
-      <div class="goal-mini-label">${t.icon} ${t.label}</div>
-      ${goals[t.key]
-        ? `<div class="goal-mini-text">${esc(goals[t.key])}</div>`
-        : `<div class="goal-mini-empty">未設定</div>`}
+  const longNodes = goalNodes.filter(g => g.type === 'long');
+  const midOrphan = goalNodes.filter(g => g.type === 'mid' && !g.parentId);
+  const shown = [...longNodes, ...midOrphan].slice(0, 3);
+  if (shown.length === 0) {
+    el.innerHTML = `<div class="goal-mini-card long" onclick="switchView('goals')" style="grid-column:1/-1">
+      <div class="goal-mini-label">📙 長期目標</div>
+      <div class="goal-mini-empty">目標を設定しよう →</div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = shown.map(g => `
+    <div class="goal-mini-card ${g.type}" onclick="switchView('goals')">
+      <div class="goal-mini-label">${TYPE_ICON[g.type]} ${TYPE_LABEL[g.type]}目標</div>
+      <div class="goal-mini-text">${esc(g.text)}</div>
     </div>`).join('');
 }
 
@@ -1233,7 +1313,7 @@ function renderHome() {
 }
 
 document.getElementById('clear-btn').addEventListener('click', () => {
-  todos = todos.filter(t => !t.done); save(); renderHome(); updateGoalProgress();
+  todos = todos.filter(t => !t.done); save(); renderHome(); renderGoals();
 });
 
 // ══════════════════════════════════════════════════════
@@ -1255,49 +1335,203 @@ function renderTasksList() {
 function renderTasks() { renderTasksList(); }
 
 document.getElementById('clear-btn-tasks').addEventListener('click', () => {
-  todos = todos.filter(t => !t.done); save(); renderHome(); renderTasks(); updateGoalProgress();
+  todos = todos.filter(t => !t.done); save(); renderHome(); renderTasks(); renderGoals();
 });
 
 // ══════════════════════════════════════════════════════
 //  GOALS VIEW
 // ══════════════════════════════════════════════════════
-document.getElementById('goal-save-btn').addEventListener('click', () => {
-  goals.short         = document.getElementById('goal-short').value.trim();
-  goals.mid           = document.getElementById('goal-mid').value.trim();
-  goals.long          = document.getElementById('goal-long').value.trim();
-  goals.shortDeadline = document.getElementById('goal-short-deadline').value;
-  goals.midDeadline   = document.getElementById('goal-mid-deadline').value;
-  goals.longDeadline  = document.getElementById('goal-long-deadline').value;
-  saveGoals();
-  renderGoalSummary();
-  updateGoalProgress();
-  // feedback
-  const btn = document.getElementById('goal-save-btn');
-  btn.textContent = '✅ 保存しました！';
-  setTimeout(() => { btn.textContent = '✨ 目標を保存する'; }, 1800);
-});
 
-function updateGoalProgress() {
-  ['short','mid','long'].forEach(type => {
-    const linked = todos.filter(t => t.goalLink===type);
-    const done   = linked.filter(t => t.done).length;
-    const pct    = linked.length===0 ? 0 : Math.round(done/linked.length*100);
-    document.getElementById(`gp-${type}-text`).textContent = goals[type] || '未設定';
-    document.getElementById(`gp-${type}-bar`).style.width  = pct + '%';
-    document.getElementById(`gp-${type}-pct`).textContent  = pct + '%';
-  });
+function newGoalId() {
+  return 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function descendantIds(id) {
+  const children = goalNodes.filter(g => g.parentId === id);
+  return children.flatMap(c => [c.id, ...descendantIds(c.id)]);
+}
+
+function goalProgress(id) {
+  const allIds = [id, ...descendantIds(id)];
+  const linked = todos.filter(t => allIds.includes(t.goalId));
+  if (!linked.length) return null;
+  const done = linked.filter(t => t.done).length;
+  return { done, total: linked.length, pct: Math.round(done / linked.length * 100) };
+}
+
+function delGoal(id) {
+  if (!confirm('この目標（と子目標）を削除しますか？')) return;
+  const ids = [id, ...descendantIds(id)];
+  goalNodes = goalNodes.filter(g => !ids.includes(g.id));
+  todos.forEach(t => { if (ids.includes(t.goalId)) t.goalId = ''; });
+  save(); saveGoals();
+  renderGoals(); renderHome(); renderTasks(); refreshGoalLinkChips();
+}
+
+// ── インライン追加フォームを表示 ──
+let _inlineTarget = null; // { parentId, type, insertAfterId }
+
+function showInlineForm(parentId, type, insertAfterId) {
+  // すでに同じフォームが開いていたら閉じる
+  if (_inlineTarget && _inlineTarget.parentId === parentId && _inlineTarget.type === type) {
+    closeInlineForm(); return;
+  }
+  _inlineTarget = { parentId, type };
+  const label   = { mid:'中期目標（1〜6ヶ月）', short:'短期目標（〜1ヶ月）' }[type];
+  const ph      = { mid:'例：英語で日常会話ができるようになる', short:'例：単語帳アプリで毎日10単語覚える' }[type];
+  const formId  = 'inline-form-' + parentId + '-' + type;
+
+  // 既存フォームを削除
+  document.querySelectorAll('.inline-form').forEach(el => el.remove());
+
+  const form = document.createElement('div');
+  form.className = 'inline-form';
+  form.id = formId;
+  form.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--sky-text);margin-bottom:8px">${label}を追加</div>
+    <input type="text" placeholder="${ph}" id="ilf-text">
+    <input type="date" id="ilf-deadline">
+    <div class="inline-form-btns">
+      <button class="inline-form-ok" onclick="submitInlineForm('${parentId}','${type}')">追加する</button>
+      <button class="inline-form-cancel" onclick="closeInlineForm()">キャンセル</button>
+    </div>`;
+
+  // insertAfterId の要素の後ろに挿入
+  const anchor = document.getElementById('gadd-btn-' + parentId + '-' + type);
+  if (anchor) {
+    anchor.insertAdjacentElement('afterend', form);
+  }
+  form.querySelector('#ilf-text').focus();
+}
+
+function closeInlineForm() {
+  document.querySelectorAll('.inline-form').forEach(el => el.remove());
+  _inlineTarget = null;
+}
+
+function submitInlineForm(parentId, type) {
+  const text = document.getElementById('ilf-text').value.trim();
+  if (!text) { document.getElementById('ilf-text').focus(); return; }
+  const deadline = document.getElementById('ilf-deadline').value;
+  goalNodes.push({ id: newGoalId(), type, text, deadline, parentId: parentId || null });
+  saveGoals();
+  closeInlineForm();
+  renderGoals(); renderHome(); refreshGoalLinkChips();
+}
+
+// ── ツリーレンダリング ──
+function buildShortNode(s) {
+  const prog = goalProgress(s.id);
+  const statsHtml = prog ? ` <span class="gcard-short-stats">${prog.done}/${prog.total}</span>` : '';
+  return `<div class="gcard-short">
+    <span class="gcard-short-label">📘短期</span>
+    <span class="gcard-short-text">${esc(s.text)}</span>
+    ${s.deadline ? `<span class="gcard-short-dl">${s.deadline}</span>` : ''}
+    ${statsHtml}
+    <button class="gcard-del-btn" onclick="delGoal('${s.id}')">🗑</button>
+  </div>`;
+}
+
+function buildMidNode(m) {
+  const prog  = goalProgress(m.id);
+  const statsHtml = prog ? `<div class="gcard-mid-stats">✅ ${prog.done}/${prog.total} (${prog.pct}%)</div>` : '';
+  const shorts = goalNodes.filter(g => g.parentId === m.id && g.type === 'short');
+  const shortsHtml = shorts.map(buildShortNode).join('');
+  return `<div class="gcard-mid">
+    <div class="gcard-mid-header">
+      <div style="flex:1">
+        <div class="gcard-mid-label">📗中期目標</div>
+        <div class="gcard-mid-text">${esc(m.text)}</div>
+        ${m.deadline ? `<div class="gcard-mid-dl">${m.deadline}</div>` : ''}
+        ${statsHtml}
+      </div>
+      <button class="gcard-del-btn" onclick="delGoal('${m.id}')">🗑</button>
+    </div>
+    <div class="gcard-shorts">
+      ${shortsHtml}
+      <button class="gcard-add-btn" id="gadd-btn-${m.id}-short"
+        onclick="showInlineForm('${m.id}','short')">＋ 短期目標を追加する</button>
+    </div>
+  </div>`;
+}
+
+function buildLongNode(l) {
+  const prog  = goalProgress(l.id);
+  const statsHtml = prog ? `<div class="gcard-long-stats">✅ ${prog.done}/${prog.total} (${prog.pct}%)</div>` : '';
+  const mids  = goalNodes.filter(g => g.parentId === l.id && g.type === 'mid');
+  const midsHtml = mids.map(buildMidNode).join('');
+  return `<div class="gcard-long">
+    <div class="gcard-long-header">
+      <span class="gcard-long-icon">📙</span>
+      <div class="gcard-long-body">
+        <div class="gcard-long-label">長期目標（6ヶ月〜）</div>
+        <div class="gcard-long-text">${esc(l.text)}</div>
+        ${l.deadline ? `<div class="gcard-long-dl">📅 ${l.deadline}</div>` : ''}
+        ${statsHtml}
+      </div>
+      <div class="gcard-long-actions">
+        <button class="gcard-del-btn" onclick="delGoal('${l.id}')">🗑</button>
+      </div>
+    </div>
+    <div class="gcard-mids">
+      ${midsHtml}
+      <button class="gcard-add-btn" id="gadd-btn-${l.id}-mid"
+        onclick="showInlineForm('${l.id}','mid')">＋ 中期目標を追加する</button>
+    </div>
+  </div>`;
+}
+
+function buildOrphanMidNode(m) {
+  const prog  = goalProgress(m.id);
+  const statsHtml = prog ? `<div class="gcard-mid-stats">✅ ${prog.done}/${prog.total} (${prog.pct}%)</div>` : '';
+  const shorts = goalNodes.filter(g => g.parentId === m.id && g.type === 'short');
+  return `<div class="gcard-orphan-mid">
+    <div class="gcard-mid-header">
+      <div style="flex:1">
+        <div class="gcard-mid-label">📗中期目標（長期未設定）</div>
+        <div class="gcard-mid-text">${esc(m.text)}</div>
+        ${m.deadline ? `<div class="gcard-mid-dl">${m.deadline}</div>` : ''}
+        ${statsHtml}
+      </div>
+      <button class="gcard-del-btn" onclick="delGoal('${m.id}')">🗑</button>
+    </div>
+    <div class="gcard-shorts">
+      ${shorts.map(buildShortNode).join('')}
+      <button class="gcard-add-btn" id="gadd-btn-${m.id}-short"
+        onclick="showInlineForm('${m.id}','short')">＋ 短期目標を追加する</button>
+    </div>
+  </div>`;
 }
 
 function renderGoals() {
-  document.getElementById('goal-short').value = goals.short || '';
-  document.getElementById('goal-mid').value   = goals.mid   || '';
-  document.getElementById('goal-long').value  = goals.long  || '';
-  document.getElementById('goal-short-deadline').value = goals.shortDeadline || '';
-  document.getElementById('goal-mid-deadline').value   = goals.midDeadline   || '';
-  document.getElementById('goal-long-deadline').value  = goals.longDeadline  || '';
-  updateGoalProgress();
+  const area = document.getElementById('goal-tree-area');
+  const longs      = goalNodes.filter(g => g.type === 'long');
+  const orphanMids = goalNodes.filter(g => g.type === 'mid' && (!g.parentId || !goalNodes.find(n => n.id === g.parentId)));
+
+  if (!longs.length && !orphanMids.length) {
+    area.innerHTML = '<div class="goal-tree-empty">📙 まず下のフォームから長期目標を追加してみよう</div>';
+  } else {
+    area.innerHTML = longs.map(buildLongNode).join('') + orphanMids.map(buildOrphanMidNode).join('');
+  }
 }
 
+// ── 長期目標追加ボタン ──
+document.getElementById('goal-add-long-btn').addEventListener('click', () => {
+  const text = document.getElementById('goal-new-long-text').value.trim();
+  if (!text) { document.getElementById('goal-new-long-text').focus(); return; }
+  const deadline = document.getElementById('goal-new-long-deadline').value;
+  goalNodes.push({ id: newGoalId(), type: 'long', text, deadline, parentId: null });
+  saveGoals();
+  document.getElementById('goal-new-long-text').value = '';
+  document.getElementById('goal-new-long-deadline').value = '';
+  renderGoals(); renderHome(); refreshGoalLinkChips();
+  const btn = document.getElementById('goal-add-long-btn');
+  btn.textContent = '✅ 追加しました！';
+  setTimeout(() => { btn.textContent = '📙 長期目標を追加'; }, 1500);
+});
+
+// ══════════════════════════════════════════════════════
+//  RECORD VIEW
 // ══════════════════════════════════════════════════════
 //  RECORD VIEW
 // ══════════════════════════════════════════════════════
@@ -1483,54 +1717,101 @@ if ('serviceWorker' in navigator) {
 // ══════════════════════════════════════════════════════
 //  AI GOAL ASSIST
 // ══════════════════════════════════════════════════════
-document.getElementById('ai-assist-btn').addEventListener('click', async () => {
-  const longGoal = document.getElementById('goal-long').value.trim();
+document.getElementById('ai-assist-btn').addEventListener('click', () => {
+  const longGoal = document.getElementById('goal-new-long-text').value.trim();
   if (!longGoal) {
-    alert('まず長期目標を入力してください 📙');
-    document.getElementById('goal-long').focus();
+    alert('まず長期目標のテキストを入力してください 📙');
+    document.getElementById('goal-new-long-text').focus();
     return;
   }
 
   const btn = document.getElementById('ai-assist-btn');
   const area = document.getElementById('ai-result-area');
   btn.disabled = true;
-  area.innerHTML = `<div class="ai-loading"><div class="ai-spinner"></div>AIが目標を分解中...</div>`;
+  area.innerHTML = `<div class="ai-loading"><div class="ai-spinner"></div>目標を分析中...</div>`;
 
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{
-          role: 'user',
-          content: `ユーザーの長期目標は「${longGoal}」です。
-この長期目標を達成するために、中期目標（1〜6ヶ月）を2〜3個、短期目標（〜1ヶ月）を2〜3個、逆算して提案してください。
-
-以下のJSON形式のみで回答してください。前置きや説明は不要です。
-{
-  "mid": ["中期目標1", "中期目標2", "中期目標3"],
-  "short": ["短期目標1", "短期目標2", "短期目標3"]
-}`
-        }]
-      })
-    });
-
-    const data = await res.json();
-    const text = data.content?.find(c => c.type === 'text')?.text || '';
-    const cleaned = text.replace(/```json|```/g, '').trim();
-    const parsed = JSON.parse(cleaned);
-
-    renderAiResult(parsed, longGoal);
-  } catch (e) {
-    area.innerHTML = `<div class="ai-result-card"><div style="color:var(--peach-text);font-size:13px">⚠️ 提案の取得に失敗しました。もう一度お試しください。</div></div>`;
-  } finally {
+  setTimeout(() => {
+    const result = suggestGoals(longGoal);
+    renderAiResult(result);
     btn.disabled = false;
-  }
+  }, 600);
 });
 
-function renderAiResult(parsed, longGoal) {
+// ── キーワードベースの目標分解エンジン ──
+function suggestGoals(longGoal) {
+  const t = longGoal;
+
+  const rules = [
+    {
+      keys: ['転職','就職','採用','内定','キャリア'],
+      mid:  ['志望業界・職種の求人を20社リサーチする','職務経歴書・履歴書を完成させる','OB/OG訪問を3人行う'],
+      short:['自分の強みと弱みをA4一枚にまとめる','転職サイトに登録して求人を眺める','現職での実績を数字で整理する']
+    },
+    {
+      keys: ['英語','TOEIC','TOEFL','英会話','外国語','語学'],
+      mid:  ['TOEIC公式問題集を2冊仕上げる','オンライン英会話を週3回のペースで続ける','英語日記を毎日書く習慣をつける'],
+      short:['現在のスコアを把握するために模擬試験を受ける','単語帳アプリで毎日10単語覚える','好きな洋画を英語字幕で1本観る']
+    },
+    {
+      keys: ['資格','検定','試験','合格','取得'],
+      mid:  ['テキストを1周して全体像を把握する','過去問を3年分解いて弱点を洗い出す','苦手分野だけ集中して復習する'],
+      short:['試験日程と出題範囲を調べてまとめる','学習スケジュールを手帳やアプリに書く','参考書を1冊選んで購入する']
+    },
+    {
+      keys: ['副業','フリーランス','起業','開業','個人事業'],
+      mid:  ['副業の収益目標と事業計画を紙に書く','SNSかポートフォリオサイトを開設する','月1件以上の案件獲得を目指す'],
+      short:['副業の選択肢を5つ調べてメリット・デメリットを比較する','クラウドソーシングに登録してみる','本業後の作業可能時間を計算する']
+    },
+    {
+      keys: ['筋肉','筋トレ','ダイエット','体重','痩せ','健康','運動','ジム','体脂肪'],
+      mid:  ['週3回のトレーニングを3ヶ月継続する','食事記録アプリで摂取カロリーを管理する','ジムまたは自宅トレーニング環境を整える'],
+      short:['現在の体重・体脂肪を記録する','1週間の食事内容を書き出してみる','10分の散歩を毎日の習慣にする']
+    },
+    {
+      keys: ['プログラミング','開発','エンジニア','コーディング','アプリ','web','Web'],
+      mid:  ['学習中の言語で小さなアプリを1つ完成させる','GitHubに週3回以上コミットする習慣をつける','技術ブログを月2本書いて発信する'],
+      short:['作りたいものを1つ決めてロードマップを書く','オンライン学習サービスに登録して最初の章を終える','プログラミング仲間やコミュニティを探す']
+    },
+    {
+      keys: ['貯金','節約','投資','お金','資産','FIRE','financial'],
+      mid:  ['月々の収支を家計簿アプリで把握する','固定費（サブスク・保険等）を見直す','積立NISAや投資口座を開設する'],
+      short:['現在の資産・負債を全部書き出す','1ヶ月の無駄遣いトップ3を特定する','目標金額と期間から月の積立額を計算する']
+    },
+    {
+      keys: ['読書','本','読む','インプット','勉強'],
+      mid:  ['月4冊を目標に読書記録をつける','読んだ本の要約をノートにまとめる','読書会やオンラインサロンに参加する'],
+      short:['積読リストを整理して次の1冊を決める','毎日寝る前15分の読書タイムを確保する','読書メモ用のノートかアプリを用意する']
+    },
+    {
+      keys: ['人間関係','コミュニケーション','友達','ネットワーク','人脈'],
+      mid:  ['月1回は新しい人に会う機会を作る','既存のつながりに定期的に連絡する','興味あるコミュニティやイベントに参加する'],
+      short:['今の人間関係を書き出して大切にしたい人を確認する','SNSのプロフィールを整理・更新する','気になるイベントや勉強会を1つ探す']
+    },
+  ];
+
+  // キーワードマッチ
+  for (const rule of rules) {
+    if (rule.keys.some(k => t.includes(k))) {
+      return { mid: rule.mid, short: rule.short };
+    }
+  }
+
+  // デフォルト（汎用）
+  return {
+    mid: [
+      `「${t}」に向けた具体的な行動計画を立てて実行する`,
+      '進捗を定期的に振り返り、やり方を調整する',
+      '同じ目標を持つ人や情報源を見つけて学ぶ'
+    ],
+    short: [
+      `「${t}」を達成した状態を具体的にイメージして書き出す`,
+      '今すぐできる小さな一歩を1つ実行する',
+      '目標達成に必要なリソース（時間・お金・スキル）を整理する'
+    ]
+  };
+}
+
+function renderAiResult(parsed) {
   const area = document.getElementById('ai-result-area');
   const midItems  = (parsed.mid   || []).slice(0, 3);
   const shortItems = (parsed.short || []).slice(0, 3);
@@ -1549,7 +1830,7 @@ function renderAiResult(parsed, longGoal) {
 
   area.innerHTML = `
     <div class="ai-result-card">
-      <div class="ai-result-title">✨ AIの提案（タップで入力欄に反映）</div>
+      <div class="ai-result-title">💡 提案（タップで入力欄に反映）</div>
       <div class="ai-result-section">
         <div class="ai-result-section-label mid">📗 中期目標（1〜6ヶ月）</div>
         ${midHtml}
@@ -1565,49 +1846,59 @@ function renderAiResult(parsed, longGoal) {
 }
 
 function applyAiSuggestion(el, type, text) {
+  // テンプレ提案：クリックしたらインラインフォームを開いてテキストをセット
   const decoded = text.replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"');
-  const inputId = type === 'mid' ? 'goal-mid' : 'goal-short';
-  const icon    = type === 'mid' ? '📗' : '📘';
+  const icon = type === 'mid' ? '📗' : '📘';
   const isApplied = el.classList.contains('applied');
-
-  if (isApplied) {
-    // 選択解除：入力欄が同じ値なら空にする
-    const inp = document.getElementById(inputId);
-    if (inp.value === decoded) inp.value = '';
-    el.classList.remove('applied');
-    el.querySelector('.ai-suggestion-check').textContent = icon;
-  } else {
-    // 同じtypeで他に選択済みのものがあれば解除
-    document.querySelectorAll(`.ai-suggestion-item[data-type="${type}"].applied`).forEach(other => {
-      other.classList.remove('applied');
-      other.querySelector('.ai-suggestion-check').textContent = icon;
-    });
-    document.getElementById(inputId).value = decoded;
+  document.querySelectorAll(`.ai-suggestion-item[data-type="${type}"].applied`).forEach(other => {
+    other.classList.remove('applied');
+    other.querySelector('.ai-suggestion-check').textContent = icon;
+  });
+  if (!isApplied) {
     el.classList.add('applied');
     el.querySelector('.ai-suggestion-check').textContent = '✅';
+    // 長期目標のIDが1つあればそこへのインラインフォームを開く
+    const longs = goalNodes.filter(g => g.type === 'long');
+    if (type === 'mid' && longs.length === 1) {
+      showInlineForm(longs[0].id, 'mid');
+      const tfEl = document.getElementById('ilf-text');
+      if (tfEl) tfEl.value = decoded;
+    } else if (type === 'short') {
+      const mids = goalNodes.filter(g => g.type === 'mid');
+      if (mids.length === 1) {
+        showInlineForm(mids[0].id, 'short');
+        const tfEl = document.getElementById('ilf-text');
+        if (tfEl) tfEl.value = decoded;
+      }
+    }
   }
 }
 
 function applyAllAiSuggestions(midItems, shortItems) {
-  if (midItems[0])   document.getElementById('goal-mid').value   = midItems[0];
-  if (shortItems[0]) document.getElementById('goal-short').value = shortItems[0];
-  // まとめて適用：全解除してから先頭だけ選択
+  // 最初の中期提案をインラインフォームにセット
+  const longs = goalNodes.filter(g => g.type === 'long');
+  if (midItems[0] && longs.length >= 1) {
+    showInlineForm(longs[0].id, 'mid');
+    const tfEl = document.getElementById('ilf-text');
+    if (tfEl) tfEl.value = midItems[0];
+  }
   document.querySelectorAll('.ai-suggestion-item').forEach(el => {
-    const type = el.dataset.type;
-    const icon = type === 'mid' ? '📗' : '📘';
     el.classList.remove('applied');
-    el.querySelector('.ai-suggestion-check').textContent = icon;
+    el.querySelector('.ai-suggestion-check').textContent = el.dataset.type === 'mid' ? '📗' : '📘';
   });
-  document.querySelectorAll('.ai-suggestion-item[data-idx="0"]').forEach(el => {
-    el.classList.add('applied');
-    el.querySelector('.ai-suggestion-check').textContent = '✅';
-  });
+  if (document.querySelector('.ai-suggestion-item[data-idx="0"][data-type="mid"]')) {
+    const first = document.querySelector('.ai-suggestion-item[data-idx="0"][data-type="mid"]');
+    first.classList.add('applied');
+    first.querySelector('.ai-suggestion-check').textContent = '✅';
+  }
 }
 
 // ══════════════════════════════════════════════════════
+//  INIT
 // ══════════════════════════════════════════════════════
+refreshGoalLinkChips();
 renderHome();
-updateGoalProgress();
+renderGoals();
 </script>
 </body>
 </html>
