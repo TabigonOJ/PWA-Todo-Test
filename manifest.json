@@ -4,10 +4,11 @@
   "description": "短期・中期・長期の目標を管理し、継続的なモチベーションを支援するアプリ",
   "lang": "ja",
   "start_url": "./index.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#eaf6fb",
-  "theme_color": "#eaf6fb",
+  "theme_color": "#7ec8e3",
   "categories": ["productivity", "utilities"],
   "icons": [
     {
@@ -28,7 +29,7 @@
       "name": "新しいタスクを追加",
       "short_name": "追加",
       "description": "タスク入力欄にフォーカス",
-      "url": "/index.html#add"
+      "url": "./index.html"
     }
   ]
 }
