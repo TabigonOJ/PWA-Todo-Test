@@ -1,26 +1,801 @@
 <!DOCTYPE html>
 <html lang="ja">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>Document</title>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#bae6fd">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="My Tasks">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<title>My Tasks</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:#f0f9ff;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+:root{
+  --acc:#0369a1;
+  --bg:#f0f9ff;--surface:#fff;--surface2:#e0f2fe;
+  --text:#0c1a2e;--text2:#475569;--text3:#94a3b8;
+  --border:rgba(14,165,233,.18);
+  --nav-w:220px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#0c1a2e;--surface:#162032;--surface2:#1e3048;--text:#e0f2fe;--text2:#93c5fd;--text3:#4e7da0;--border:rgba(125,211,252,.15)}
+}
 
-        <!-- iosのアイコン設定 -->
-        <link rel="apple-touch-icon" href="images/icon.jpg" sizes="192x192"/>
+/* layout */
+.layout{display:flex;min-height:100vh}
+.side-nav{width:var(--nav-w);flex-shrink:0;background:var(--surface);border-right:0.5px solid var(--border);display:flex;flex-direction:column;padding:1.5rem 1rem;position:fixed;top:0;left:0;bottom:0;z-index:50}
+.logo{display:flex;align-items:center;gap:10px;margin-bottom:2rem;padding-left:4px}
+.logo-icon{width:34px;height:34px;background:#bae6fd;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.logo-icon svg{width:18px;height:18px;color:#0369a1}
+.logo-text{font-size:15px;font-weight:700;color:var(--text)}
+.sn{display:flex;align-items:center;gap:10px;padding:9px 12px;border:none;border-radius:10px;background:transparent;cursor:pointer;color:var(--text2);font-size:14px;width:100%;text-align:left;margin-bottom:3px;transition:all .15s}
+.sn svg{width:18px;height:18px;flex-shrink:0}
+.sn:hover{background:var(--surface2);color:var(--text)}
+.sn.active{background:#e0f2fe;color:#0c4a6e;font-weight:600}
+.main{margin-left:var(--nav-w);flex:1;padding:2rem 2.5rem;max-width:960px}
+.bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:0.5px solid var(--border);z-index:50;padding-bottom:env(safe-area-inset-bottom)}
+.bn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:10px 0 8px;border:none;background:transparent;cursor:pointer;color:var(--text3);font-size:10px;gap:3px;transition:color .15s}
+.bn.active{color:var(--acc)}
+.bn svg{width:20px;height:20px}
+@media(max-width:700px){
+  .side-nav{display:none}
+  .bottom-nav{display:flex}
+  .main{margin-left:0;padding:1rem 1rem 5.5rem;max-width:100%}
+}
 
-        <!-- PWAのmanifest.json -->
-        <link rel="manifest" href="manifest.json">
-    </head>
-    <body>
-        <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('js/serviceworker.js').then(function(registration) {
-                console.log('ServiceWorker registration successful with scope: ', registration.scope);
-            }).catch(function(err) {
-                console.log('ServiceWorker registration failed: ', err);
-            });
-        }    
-        </script>
-    </body>
+/* page header */
+.page-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem}
+.page-header h1{font-size:22px;font-weight:700;color:var(--text)}
+.add-btn{display:flex;align-items:center;gap:6px;padding:9px 18px;border-radius:99px;background:#38bdf8;border:none;cursor:pointer;font-size:13px;font-weight:700;color:#0c4a6e}
+.add-btn svg{width:15px;height:15px}
+
+/* stats cards */
+.stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.1rem}
+.sc{background:var(--surface2);border-radius:12px;padding:12px 8px;text-align:center}
+.sc-n{font-size:22px;font-weight:700;color:var(--acc)}
+.sc-l{font-size:11px;color:var(--text2);margin-top:2px}
+.prog{height:5px;border-radius:99px;background:var(--surface2);margin-bottom:1.1rem;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;background:#38bdf8;transition:width .4s}
+
+/* subtabs */
+.subtabs{display:flex;margin-bottom:1rem;border-bottom:1.5px solid var(--border)}
+.stab{padding:8px 20px;border:none;background:transparent;cursor:pointer;font-size:13px;font-weight:500;color:var(--text3);border-bottom:2.5px solid transparent;margin-bottom:-1.5px;transition:all .15s}
+.stab.on{color:#0369a1;border-bottom-color:#38bdf8;font-weight:600}
+
+/* filters */
+.filter-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:.9rem}
+.fc{padding:4px 12px;border-radius:99px;font-size:12px;font-weight:500;border:1.5px solid transparent;cursor:pointer;background:var(--surface2);color:var(--text2);transition:all .15s}
+.fc.on{background:#bae6fd;color:#0c4a6e;border-color:#7dd3fc}
+
+/* task cards */
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:13px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px}
+.card.done .ct{text-decoration:line-through;color:var(--text3);opacity:.7}
+.chk input{width:17px;height:17px;accent-color:#38bdf8;cursor:pointer;margin-top:2px;flex-shrink:0}
+.cbody{flex:1;min-width:0}
+.ct{font-size:14px;font-weight:500;color:var(--text);margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.badge{font-size:11px;padding:2px 8px;border-radius:99px;font-weight:500}
+.bw{color:#0c4a6e;background:#e0f2fe}
+.bp{color:#134e4a;background:#ccfbf1}
+.bs{color:#312e81;background:#e0e7ff}
+.bo{color:#064e3b;background:#d1fae5}
+.ph{background:#fee2e2;color:#991b1b}
+.pm{background:#fef3c7;color:#92400e}
+.pl{background:#d1fae5;color:#065f46}
+.dt{font-size:11px;color:var(--text2)}
+.rt{font-size:11px;color:#0c4a6e;background:#bae6fd;padding:2px 6px;border-radius:99px}
+.rmt{font-size:11px;color:#134e4a;background:#a7f3d0;padding:2px 6px;border-radius:99px}
+.cact{display:flex;gap:4px;margin-left:auto;flex-shrink:0}
+.ib{width:28px;height:28px;border:none;background:transparent;cursor:pointer;color:var(--text3);border-radius:7px;font-size:14px;display:flex;align-items:center;justify-content:center}
+.ib:hover{background:var(--surface2)}
+.empty{text-align:center;color:var(--text3);font-size:14px;padding:3rem 0;line-height:2.2}
+
+/* pages */
+.page{display:none}
+.page.active{display:block}
+
+/* ── goal cards ── */
+.goal-card{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:14px 16px;margin-bottom:10px}
+.goal-header{display:flex;align-items:flex-start;gap:10px;margin-bottom:10px}
+.goal-check{width:22px;height:22px;border-radius:50%;border:2px solid #7dd3fc;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;margin-top:1px;transition:all .15s;background:transparent}
+.goal-check.done{background:#38bdf8;border-color:#38bdf8}
+.goal-check svg{width:13px;height:13px;color:#fff;opacity:0;transition:opacity .15s}
+.goal-check.done svg{opacity:1}
+.goal-body{flex:1;min-width:0}
+.goal-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:3px}
+.goal-title.done-text{text-decoration:line-through;color:var(--text3)}
+.goal-meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:11px;color:var(--text3)}
+.goal-deadline{color:var(--text2)}
+.goal-cat{padding:2px 8px;border-radius:99px;font-weight:500}
+.goal-actions{display:flex;gap:4px;flex-shrink:0}
+.goal-prog-bar{height:6px;border-radius:99px;background:var(--surface2);overflow:hidden;margin-top:2px}
+.goal-prog-fill{height:100%;border-radius:99px;background:#38bdf8;transition:width .5s}
+.goal-prog-label{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px}
+.goal-achieved{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#0369a1;background:#e0f2fe;padding:2px 8px;border-radius:99px;font-weight:500;margin-top:6px}
+
+/* goal section header */
+.section-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem}
+.section-hd h2{font-size:13px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em}
+.add-goal-btn{display:flex;align-items:center;gap:4px;padding:5px 12px;border-radius:99px;background:var(--surface2);border:none;cursor:pointer;font-size:12px;font-weight:600;color:var(--acc)}
+.add-goal-btn svg{width:13px;height:13px}
+
+/* goal summary pills */
+.goal-summary{display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap}
+.gsum{background:var(--surface2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:2px;min-width:90px}
+.gsum-n{font-size:20px;font-weight:700;color:var(--acc)}
+
+/* charts */
+.chart-section{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:1.2rem 1.4rem;margin-bottom:1rem}
+.chart-section h3{font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+@media(max-width:700px){.chart-grid{grid-template-columns:1fr}}
+.chart-wrap{position:relative;width:100%;height:200px}
+.chart-wrap-h{position:relative;width:100%;height:200px}
+.chart-wrap-d{position:relative;width:100%;height:180px}
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:.6rem;font-size:12px;color:var(--text2)}
+.ld{width:10px;height:10px;border-radius:2px;flex-shrink:0;display:inline-block}
+
+/* calendar */
+.card-panel{background:var(--surface);border:0.5px solid var(--border);border-radius:14px;padding:1.4rem;margin-bottom:1rem}
+.cal-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.cal-hd h2{font-size:15px;font-weight:700;color:var(--text)}
+.cal-nav{background:transparent;border:none;cursor:pointer;color:var(--text2);font-size:22px;padding:0 8px;line-height:1}
+.cgrid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dow{font-size:11px;color:var(--text3);text-align:center;padding:4px 0;font-weight:600}
+.cday{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;color:var(--text2)}
+.cday.tod{background:#bae6fd;color:#0c4a6e;font-weight:700}
+.cday.om{opacity:.22}
+.cday.ht{background:var(--surface2)}
+.drow{display:flex;gap:2px;margin-top:2px}
+.dd{width:5px;height:5px;border-radius:50%}
+.hmap{display:flex;gap:3px;flex-wrap:wrap;margin-bottom:.5rem}
+.hc{width:14px;height:14px;border-radius:3px}
+.hleg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text3)}
+
+/* modals */
+.modal-wrap{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;padding:1rem}
+.modal-wrap.open{display:flex}
+.modal{background:var(--surface);border-radius:18px;padding:1.6rem;width:100%;max-width:440px}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:1.1rem;color:var(--text)}
+.f{margin-bottom:.85rem}
+.f label{font-size:12px;color:var(--text2);display:block;margin-bottom:4px;font-weight:600}
+.f input,.f select,.f textarea{width:100%;padding:9px 11px;border:0.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--surface);color:var(--text);outline:none;font-family:inherit}
+.f textarea{resize:vertical;min-height:72px}
+.f input:focus,.f select:focus,.f textarea:focus{border-color:#38bdf8;box-shadow:0 0 0 3px rgba(56,189,248,.15)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.mact{display:flex;gap:8px;justify-content:flex-end;margin-top:1.2rem}
+.btn-c{padding:9px 16px;border:0.5px solid var(--border);border-radius:10px;background:transparent;cursor:pointer;font-size:14px;color:var(--text2)}
+.btn-s{padding:9px 20px;border:none;border-radius:10px;background:#38bdf8;color:#0c4a6e;font-size:14px;font-weight:700;cursor:pointer}
+
+/* welcome */
+.welcome-wrap{position:fixed;inset:0;background:#f0f9ff;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center}
+@media(prefers-color-scheme:dark){.welcome-wrap{background:#0c1a2e}}
+.welcome-icon{width:90px;height:90px;background:#bae6fd;border-radius:24px;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem}
+.welcome-icon svg{width:50px;height:50px;color:#0369a1}
+.welcome-wrap h1{font-size:26px;font-weight:700;color:var(--text);margin-bottom:.6rem}
+.welcome-wrap p{font-size:14px;color:var(--text2);line-height:1.75;margin-bottom:2rem;max-width:320px}
+.welcome-btns{display:flex;flex-direction:column;gap:10px;width:100%;max-width:300px}
+.wb-primary{padding:15px;border:none;border-radius:14px;background:#38bdf8;color:#0c4a6e;font-size:15px;font-weight:700;cursor:pointer}
+.wb-secondary{padding:15px;border:1.5px solid #7dd3fc;border-radius:14px;background:transparent;color:var(--acc);font-size:15px;font-weight:500;cursor:pointer}
+.welcome-wrap small{font-size:11px;color:var(--text3);margin-top:1.3rem}
+
+/* install banner */
+.install-banner{background:#e0f2fe;border:0.5px solid #7dd3fc;border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.2rem;gap:10px}
+.install-banner p{font-size:13px;color:#0c4a6e;flex:1}
+.install-btn{padding:7px 14px;background:#38bdf8;border:none;border-radius:8px;font-size:13px;font-weight:700;color:#0c4a6e;cursor:pointer;white-space:nowrap}
+.close-x{background:transparent;border:none;cursor:pointer;color:#0369a1;font-size:18px;line-height:1;padding:0}
+</style>
+</head>
+<body>
+
+<!-- Welcome -->
+<div class="welcome-wrap" id="welcomeScreen">
+  <div class="welcome-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>
+  </div>
+  <h1>My Tasks へようこそ</h1>
+  <p>タスク管理＋目標管理のPWAアプリです。<br>サンプルデータで試すか、空の状態から始めましょう。</p>
+  <div class="welcome-btns">
+    <button class="wb-primary" id="wbSample">サンプルデータで始める</button>
+    <button class="wb-secondary" id="wbEmpty">空っぽから始める</button>
+  </div>
+  <small>データはこのデバイスにのみ保存されます</small>
+</div>
+
+<div class="layout">
+  <!-- Side nav -->
+  <nav class="side-nav">
+    <div class="logo">
+      <div class="logo-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg></div>
+      <span class="logo-text">My Tasks</span>
+    </div>
+    <button class="sn active" data-p="todo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>タスク
+    </button>
+    <button class="sn" data-p="stats">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>概要・目標
+    </button>
+    <button class="sn" data-p="calendar">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>カレンダー
+    </button>
+    <button class="sn" data-p="category">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10H12z"/></svg>分析
+    </button>
+  </nav>
+
+  <main class="main">
+    <div class="install-banner" id="installBanner" style="display:none">
+      <p>ホーム画面に追加してオフラインでも使えます</p>
+      <button class="install-btn" id="installBtn">追加</button>
+      <button class="close-x" id="closeBanner">✕</button>
+    </div>
+
+    <!-- タスク -->
+    <div class="page active" id="p-todo">
+      <div class="page-header">
+        <h1>タスク</h1>
+        <button class="add-btn" id="openM">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          タスクを追加
+        </button>
+      </div>
+      <div class="stats-row">
+        <div class="sc"><div class="sc-n" id="s-total">0</div><div class="sc-l">全タスク</div></div>
+        <div class="sc"><div class="sc-n" id="s-done">0</div><div class="sc-l">完了</div></div>
+        <div class="sc"><div class="sc-n" id="s-today">0</div><div class="sc-l">今日期限</div></div>
+        <div class="sc"><div class="sc-n" id="s-rate">0%</div><div class="sc-l">達成率</div></div>
+      </div>
+      <div class="prog"><div class="prog-fill" id="pf" style="width:0%"></div></div>
+      <div class="subtabs">
+        <button class="stab on" data-st="pending">未完了</button>
+        <button class="stab" data-st="done">完了済み</button>
+      </div>
+      <div class="filter-row" id="filterRow">
+        <div class="fc on" data-f="all">すべて</div>
+        <div class="fc" data-f="today">今日</div>
+        <div class="fc" data-f="high">高優先</div>
+        <div class="fc" data-f="work">仕事</div>
+        <div class="fc" data-f="private">プライベート</div>
+        <div class="fc" data-f="study">勉強</div>
+      </div>
+      <div id="taskList"></div>
+    </div>
+
+    <!-- 概要・目標 -->
+    <div class="page" id="p-stats">
+      <div class="page-header"><h1>概要・目標</h1></div>
+
+      <!-- タスクサマリー -->
+      <div class="stats-row" style="margin-bottom:1.4rem">
+        <div class="sc"><div class="sc-n" id="ov-total">0</div><div class="sc-l">累計タスク</div></div>
+        <div class="sc"><div class="sc-n" id="ov-done">0</div><div class="sc-l">完了</div></div>
+        <div class="sc"><div class="sc-n" id="ov-pend">0</div><div class="sc-l">未完了</div></div>
+        <div class="sc"><div class="sc-n" id="ov-rate">0%</div><div class="sc-l">達成率</div></div>
+      </div>
+
+      <!-- 目標セクション -->
+      <div class="section-hd">
+        <h2>目標</h2>
+        <button class="add-goal-btn" id="openGoalM">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          目標を追加
+        </button>
+      </div>
+
+      <!-- goal summary -->
+      <div class="goal-summary" id="goalSummary"></div>
+
+      <!-- goal list -->
+      <div id="goalList"></div>
+
+      <div style="margin-top:1.4rem">
+        <div class="chart-section">
+          <h3>カテゴリ別タスク状況</h3>
+          <div class="legend">
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#38bdf8"></span>完了</span>
+            <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#bfdbfe"></span>未完了</span>
+          </div>
+          <div class="chart-wrap-h"><canvas id="catBarC" role="img" aria-label="カテゴリ別完了・未完了タスク数">カテゴリ別タスク状況。</canvas></div>
+        </div>
+        <div class="chart-grid">
+          <div class="chart-section">
+            <h3>優先度別内訳</h3>
+            <div class="chart-wrap-d"><canvas id="priC" role="img" aria-label="優先度別タスク内訳">優先度別割合。</canvas></div>
+          </div>
+          <div class="chart-section">
+            <h3>完了 / 未完了</h3>
+            <div class="chart-wrap-d"><canvas id="doneC" role="img" aria-label="完了・未完了の割合">完了・未完了の割合。</canvas></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- カレンダー -->
+    <div class="page" id="p-calendar">
+      <div class="page-header"><h1>カレンダー</h1></div>
+      <div class="card-panel">
+        <div class="cal-hd">
+          <button class="cal-nav" id="cPrev">‹</button>
+          <h2 id="cTitle"></h2>
+          <button class="cal-nav" id="cNext">›</button>
+        </div>
+        <div class="cgrid" id="cGrid"></div>
+        <div style="display:flex;gap:14px;margin-top:.9rem;font-size:12px;color:var(--text3)">
+          <span style="display:flex;align-items:center;gap:5px"><span class="dd" style="background:#38bdf8;width:8px;height:8px"></span>完了あり</span>
+          <span style="display:flex;align-items:center;gap:5px"><span class="dd" style="background:#fca5a5;width:8px;height:8px"></span>未完了あり</span>
+        </div>
+      </div>
+      <div class="card-panel">
+        <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:.8rem">達成ヒートマップ（過去90日）</div>
+        <div class="hmap" id="hmap"></div>
+        <div class="hleg">
+          <span>少</span>
+          <div class="hc" style="background:#e0f2fe"></div>
+          <div class="hc" style="background:#7dd3fc"></div>
+          <div class="hc" style="background:#38bdf8"></div>
+          <div class="hc" style="background:#0369a1"></div>
+          <span>多</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分析 -->
+    <div class="page" id="p-category">
+      <div class="page-header"><h1>分析</h1></div>
+      <div class="chart-section" style="margin-bottom:1rem">
+        <h3>カテゴリ別達成率</h3>
+        <div class="legend">
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#7dd3fc"></span>仕事</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#6ee7b7"></span>プライベート</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#a5b4fc"></span>勉強</span>
+          <span style="display:flex;align-items:center;gap:4px"><span class="ld" style="background:#86efac"></span>その他</span>
+        </div>
+        <div class="chart-wrap-h"><canvas id="catC" role="img" aria-label="カテゴリ別完了・未完了数の横棒グラフ">カテゴリ別タスク状況。</canvas></div>
+      </div>
+      <div class="chart-grid">
+        <div class="chart-section">
+          <h3>優先度別完了状況</h3>
+          <div class="chart-wrap"><canvas id="priBarC" role="img" aria-label="優先度別完了・未完了棒グラフ">優先度別タスク状況。</canvas></div>
+        </div>
+        <div class="chart-section">
+          <h3>完了タスクの優先度内訳</h3>
+          <div class="chart-wrap"><canvas id="priDoneC" role="img" aria-label="完了タスクの優先度別ドーナツ">完了タスクの優先度割合。</canvas></div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Bottom nav -->
+<nav class="bottom-nav">
+  <button class="bn active" data-p="todo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M9 12l2 2 4-4"/></svg>タスク
+  </button>
+  <button class="bn" data-p="stats">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>概要
+  </button>
+  <button class="bn" data-p="calendar">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>カレンダー
+  </button>
+  <button class="bn" data-p="category">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 1 10 10H12z"/></svg>分析
+  </button>
+</nav>
+
+<!-- タスクModal -->
+<div class="modal-wrap" id="mwrap">
+  <div class="modal">
+    <h3 id="mTitle">タスクを追加</h3>
+    <div class="f"><label>タイトル</label><input type="text" id="fT" placeholder="タスク名を入力..."></div>
+    <div class="f2">
+      <div class="f"><label>カテゴリ</label><select id="fC"><option value="work">仕事</option><option value="private">プライベート</option><option value="study">勉強</option><option value="other">その他</option></select></div>
+      <div class="f"><label>優先度</label><select id="fP"><option value="high">高</option><option value="mid">中</option><option value="low">低</option></select></div>
+    </div>
+    <div class="f2">
+      <div class="f"><label>期限</label><input type="date" id="fD"></div>
+      <div class="f"><label>リマインド</label><input type="time" id="fR"></div>
+    </div>
+    <div class="f"><label>繰り返し</label><select id="fRp"><option value="">なし</option><option value="daily">毎日</option><option value="weekly">毎週</option><option value="monthly">毎月</option></select></div>
+    <div class="mact">
+      <button class="btn-c" id="closeM">キャンセル</button>
+      <button class="btn-s" id="saveT">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 目標Modal -->
+<div class="modal-wrap" id="gmwrap">
+  <div class="modal">
+    <h3 id="gmTitle">目標を追加</h3>
+    <div class="f"><label>目標タイトル</label><input type="text" id="gfT" placeholder="例：TOEIC 800点を取る"></div>
+    <div class="f"><label>メモ（任意）</label><textarea id="gfN" placeholder="目標の詳細や背景など..."></textarea></div>
+    <div class="f2">
+      <div class="f"><label>カテゴリ</label><select id="gfC"><option value="work">仕事</option><option value="private">プライベート</option><option value="study">勉強</option><option value="other">その他</option></select></div>
+      <div class="f"><label>期限（任意）</label><input type="date" id="gfD"></div>
+    </div>
+    <div class="mact">
+      <button class="btn-c" id="closeGM">キャンセル</button>
+      <button class="btn-s" id="saveG">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CL={work:'bw',private:'bp',study:'bs',other:'bo'};
+const PL={high:'ph',mid:'pm',low:'pl'};
+const CN={work:'仕事',private:'プライベート',study:'勉強',other:'その他'};
+const PN={high:'高',mid:'中',low:'低'};
+const RN={daily:'毎日',weekly:'毎週',monthly:'毎月'};
+const TODAY=new Date().toISOString().slice(0,10);
+
+const SAMPLE_TASKS=[
+  {id:1,title:'デザインフィードバックをまとめる',cat:'work',pri:'high',date:TODAY,remind:'10:00',repeat:'',done:false},
+  {id:2,title:'英単語50個復習',cat:'study',pri:'mid',date:'',remind:'',repeat:'daily',done:false},
+  {id:3,title:'週末旅行プランを立てる',cat:'private',pri:'low',date:'',remind:'18:00',repeat:'',done:false},
+  {id:4,title:'朝のストレッチ',cat:'private',pri:'low',date:TODAY,remind:'07:00',repeat:'daily',done:true},
+  {id:5,title:'週次レポート作成',cat:'work',pri:'high',date:TODAY,remind:'',repeat:'weekly',done:false},
+];
+const SAMPLE_GOALS=[
+  {id:1,title:'TOEIC 800点を取る',note:'毎日英単語学習で底上げ',cat:'study',deadline:'2026-09-30',done:false},
+  {id:2,title:'副業で月5万円を達成する',note:'',cat:'work',deadline:'2026-12-31',done:false},
+  {id:3,title:'体重を5kg落とす',note:'食事管理＋週3回運動',cat:'private',deadline:'2026-08-01',done:true},
+];
+
+const isFirst=localStorage.getItem('launched')==null;
+let tasks=JSON.parse(localStorage.getItem('tasks')||'[]');
+let goals=JSON.parse(localStorage.getItem('goals')||'[]');
+let nid=tasks.reduce((m,t)=>Math.max(m,t.id),0)+1;
+let gnid=goals.reduce((m,g)=>Math.max(m,g.id),0)+1;
+let filter='all',subtab='pending',editId=null,editGid=null;
+
+function save(){localStorage.setItem('tasks',JSON.stringify(tasks));}
+function saveG(){localStorage.setItem('goals',JSON.stringify(goals));}
+
+// ── Nav ──
+function switchPage(p){
+  document.querySelectorAll('.sn,.bn').forEach(x=>x.classList.toggle('active',x.dataset.p===p));
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('p-'+p).classList.add('active');
+  if(p==='stats') renderStats();
+  if(p==='calendar'){renderCal();renderHeatmap();}
+  if(p==='category') renderCat();
+}
+document.querySelectorAll('.sn,.bn').forEach(b=>b.addEventListener('click',()=>switchPage(b.dataset.p)));
+
+// ── Subtabs ──
+document.querySelectorAll('.stab').forEach(b=>b.addEventListener('click',()=>{
+  subtab=b.dataset.st;
+  document.querySelectorAll('.stab').forEach(x=>x.classList.toggle('on',x.dataset.st===subtab));
+  document.getElementById('filterRow').style.display=subtab==='pending'?'flex':'none';
+  render();
+}));
+
+// ── Filters ──
+document.querySelectorAll('.fc').forEach(el=>el.addEventListener('click',()=>{
+  filter=el.dataset.f;
+  document.querySelectorAll('.fc').forEach(c=>c.classList.toggle('on',c.dataset.f===filter));
+  render();
+}));
+
+// ── Task render ──
+function getList(){
+  if(subtab==='done') return tasks.filter(t=>t.done);
+  return tasks.filter(t=>{
+    if(t.done) return false;
+    if(filter==='all') return true;
+    if(filter==='today') return t.date===TODAY;
+    if(filter==='high') return t.pri==='high';
+    return t.cat===filter;
+  });
+}
+
+function render(){
+  const total=tasks.length,doneN=tasks.filter(t=>t.done).length;
+  const todayN=tasks.filter(t=>t.date===TODAY&&!t.done).length;
+  const rate=total?Math.round(doneN/total*100):0;
+  document.getElementById('s-total').textContent=total;
+  document.getElementById('s-done').textContent=doneN;
+  document.getElementById('s-today').textContent=todayN;
+  document.getElementById('s-rate').textContent=rate+'%';
+  document.getElementById('pf').style.width=rate+'%';
+
+  const list=getList();
+  let html='';
+  if(!list.length){
+    html=`<div class="empty">${subtab==='pending'?'未完了のタスクはありません 🎉<br><span style="font-size:12px">新しいタスクを追加しましょう</span>':'完了済みのタスクはまだありません'}</div>`;
+  } else {
+    list.forEach(t=>{html+=cHTML(t);});
+  }
+  document.getElementById('taskList').innerHTML=html;
+  document.querySelectorAll('.chk input').forEach(el=>el.addEventListener('change',()=>{
+    tasks=tasks.map(t=>t.id===+el.dataset.id?{...t,done:!t.done}:t);
+    save();render();refreshCharts();
+  }));
+  document.querySelectorAll('[data-edit]').forEach(el=>el.addEventListener('click',()=>openEdit(+el.dataset.edit)));
+  document.querySelectorAll('[data-del]').forEach(el=>el.addEventListener('click',()=>{
+    tasks=tasks.filter(t=>t.id!==+el.dataset.del);save();render();refreshCharts();
+  }));
+}
+
+function cHTML(t){
+  const ov=t.date&&t.date<TODAY&&!t.done,isT=t.date===TODAY;
+  const actions=!t.done
+    ?`<button class="ib" data-edit="${t.id}" aria-label="編集">✏️</button><button class="ib" data-del="${t.id}" aria-label="削除">🗑️</button>`
+    :'';
+  return `<div class="card${t.done?' done':''}">
+    <div class="chk"><input type="checkbox" data-id="${t.id}"${t.done?' checked':''}></div>
+    <div class="cbody">
+      <div class="ct">${t.title}</div>
+      <div class="meta">
+        <span class="badge ${CL[t.cat]}">${CN[t.cat]}</span>
+        <span class="badge ${PL[t.pri]}">${PN[t.pri]}</span>
+        ${t.date?`<span class="dt" style="${ov?'color:#fb7185':isT?'color:#0369a1':''}">${t.date}</span>`:''}
+        ${t.repeat?`<span class="rt">${RN[t.repeat]}</span>`:''}
+        ${t.remind?`<span class="rmt">⏰ ${t.remind}</span>`:''}
+      </div>
+    </div>
+    <div class="cact">${actions}</div>
+  </div>`;
+}
+
+// ── Task modal ──
+function openModal(clear){
+  editId=null;
+  if(clear){['fT','fD','fR'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('fC').value='work';document.getElementById('fP').value='mid';document.getElementById('fRp').value='';
+    document.getElementById('mTitle').textContent='タスクを追加';}
+  document.getElementById('mwrap').classList.add('open');
+  setTimeout(()=>document.getElementById('fT').focus(),80);
+}
+function openEdit(id){
+  const t=tasks.find(x=>x.id===id);if(!t)return;editId=id;
+  document.getElementById('fT').value=t.title;document.getElementById('fC').value=t.cat;
+  document.getElementById('fP').value=t.pri;document.getElementById('fD').value=t.date||'';
+  document.getElementById('fR').value=t.remind||'';document.getElementById('fRp').value=t.repeat||'';
+  document.getElementById('mTitle').textContent='タスクを編集';
+  document.getElementById('mwrap').classList.add('open');
+}
+function closeModal(){document.getElementById('mwrap').classList.remove('open');}
+document.getElementById('openM').addEventListener('click',()=>openModal(true));
+document.getElementById('closeM').addEventListener('click',closeModal);
+document.getElementById('mwrap').addEventListener('click',e=>{if(e.target===document.getElementById('mwrap'))closeModal();});
+document.getElementById('saveT').addEventListener('click',()=>{
+  const title=document.getElementById('fT').value.trim();if(!title)return;
+  const task={id:editId||nid++,title,cat:document.getElementById('fC').value,
+    pri:document.getElementById('fP').value,date:document.getElementById('fD').value,
+    remind:document.getElementById('fR').value,repeat:document.getElementById('fRp').value,
+    done:editId?(tasks.find(t=>t.id===editId)||{}).done||false:false};
+  tasks=editId?tasks.map(t=>t.id===editId?task:t):[...tasks,task];
+  save();closeModal();render();refreshCharts();
+});
+
+// ── Goal render ──
+function renderGoals(){
+  const total=goals.length,doneN=goals.filter(g=>g.done).length,pendN=total-doneN;
+  const rate=total?Math.round(doneN/total*100):0;
+  document.getElementById('goalSummary').innerHTML=
+    `<div class="gsum"><div class="gsum-n">${total}</div>全目標</div>
+     <div class="gsum"><div class="gsum-n">${doneN}</div>達成済み</div>
+     <div class="gsum"><div class="gsum-n">${pendN}</div>進行中</div>
+     <div class="gsum"><div class="gsum-n">${rate}%</div>達成率</div>`;
+
+  const active=goals.filter(g=>!g.done);
+  const done=goals.filter(g=>g.done);
+  let html='';
+  if(!goals.length){
+    html='<div class="empty" style="padding:1.5rem 0">目標がまだありません<br><span style="font-size:12px">「目標を追加」から最初の目標を設定しましょう</span></div>';
+  } else {
+    if(active.length){active.forEach(g=>{html+=goalHTML(g);});}
+    if(done.length){
+      html+=`<div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin:1rem 0 .6rem">達成済み (${done.length})</div>`;
+      done.forEach(g=>{html+=goalHTML(g);});
+    }
+  }
+  document.getElementById('goalList').innerHTML=html;
+
+  document.querySelectorAll('.goal-check').forEach(el=>el.addEventListener('click',()=>{
+    const id=+el.dataset.id;
+    goals=goals.map(g=>g.id===id?{...g,done:!g.done}:g);
+    saveG();renderGoals();
+  }));
+  document.querySelectorAll('[data-gedit]').forEach(el=>el.addEventListener('click',()=>openGoalEdit(+el.dataset.gedit)));
+  document.querySelectorAll('[data-gdel]').forEach(el=>el.addEventListener('click',()=>{
+    goals=goals.filter(g=>g.id!==+el.dataset.gdel);saveG();renderGoals();
+  }));
+}
+
+function goalHTML(g){
+  const ov=g.deadline&&g.deadline<TODAY&&!g.done;
+  const isNear=g.deadline&&!g.done&&g.deadline>=TODAY&&g.deadline<=new Date(Date.now()+7*86400000).toISOString().slice(0,10);
+  const deadlineColor=ov?'color:#fb7185':isNear?'color:#f59e0b':'';
+  const actions=!g.done
+    ?`<button class="ib" data-gedit="${g.id}" aria-label="編集">✏️</button><button class="ib" data-gdel="${g.id}" aria-label="削除">🗑️</button>`
+    :`<button class="ib" data-gdel="${g.id}" aria-label="削除">🗑️</button>`;
+  return `<div class="goal-card">
+    <div class="goal-header">
+      <div class="goal-check${g.done?' done':''}" data-id="${g.id}" role="checkbox" aria-checked="${g.done}" tabindex="0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="goal-body">
+        <div class="goal-title${g.done?' done-text':''}">${g.title}</div>
+        <div class="goal-meta">
+          <span class="badge goal-cat ${CL[g.cat]}">${CN[g.cat]}</span>
+          ${g.deadline?`<span class="goal-deadline" style="${deadlineColor}">期限: ${g.deadline}</span>`:''}
+          ${g.note?`<span style="color:var(--text3)">📝 ${g.note.slice(0,20)}${g.note.length>20?'…':''}</span>`:''}
+        </div>
+        ${g.done?`<div class="goal-achieved"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>達成！</div>`:''}
+      </div>
+      <div class="goal-actions">${actions}</div>
+    </div>
+  </div>`;
+}
+
+// ── Goal modal ──
+function openGoalModal(clear){
+  editGid=null;
+  if(clear){['gfT','gfD','gfN'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('gfC').value='work';
+    document.getElementById('gmTitle').textContent='目標を追加';}
+  document.getElementById('gmwrap').classList.add('open');
+  setTimeout(()=>document.getElementById('gfT').focus(),80);
+}
+function openGoalEdit(id){
+  const g=goals.find(x=>x.id===id);if(!g)return;editGid=id;
+  document.getElementById('gfT').value=g.title;document.getElementById('gfC').value=g.cat;
+  document.getElementById('gfD').value=g.deadline||'';document.getElementById('gfN').value=g.note||'';
+  document.getElementById('gmTitle').textContent='目標を編集';
+  document.getElementById('gmwrap').classList.add('open');
+}
+function closeGoalModal(){document.getElementById('gmwrap').classList.remove('open');}
+document.getElementById('openGoalM').addEventListener('click',()=>openGoalModal(true));
+document.getElementById('closeGM').addEventListener('click',closeGoalModal);
+document.getElementById('gmwrap').addEventListener('click',e=>{if(e.target===document.getElementById('gmwrap'))closeGoalModal();});
+document.getElementById('saveG').addEventListener('click',()=>{
+  const title=document.getElementById('gfT').value.trim();if(!title)return;
+  const goal={id:editGid||gnid++,title,cat:document.getElementById('gfC').value,
+    deadline:document.getElementById('gfD').value,note:document.getElementById('gfN').value.trim(),
+    done:editGid?(goals.find(g=>g.id===editGid)||{}).done||false:false};
+  goals=editGid?goals.map(g=>g.id===editGid?goal:g):[...goals,goal];
+  saveG();closeGoalModal();renderGoals();
+});
+
+// ── Stats charts (driven by real data) ──
+let SC={};
+function catCounts(){
+  const cats=['work','private','study','other'];
+  return{done:cats.map(c=>tasks.filter(t=>t.cat===c&&t.done).length),
+         pend:cats.map(c=>tasks.filter(t=>t.cat===c&&!t.done).length)};
+}
+function priCounts(){
+  const pris=['high','mid','low'];
+  return{done:pris.map(p=>tasks.filter(t=>t.pri===p&&t.done).length),
+         pend:pris.map(p=>tasks.filter(t=>t.pri===p&&!t.done).length)};
+}
+
+function renderStats(){
+  const total=tasks.length,dN=tasks.filter(t=>t.done).length,pN=total-dN;
+  document.getElementById('ov-total').textContent=total;
+  document.getElementById('ov-done').textContent=dN;
+  document.getElementById('ov-pend').textContent=pN;
+  document.getElementById('ov-rate').textContent=total?Math.round(dN/total*100)+'%':'0%';
+  renderGoals();
+  const cd=catCounts(),pd=priCounts();
+  if(SC.catBar){SC.catBar.data.datasets[0].data=cd.done;SC.catBar.data.datasets[1].data=cd.pend;SC.catBar.update();}
+  else SC.catBar=new Chart(document.getElementById('catBarC'),{type:'bar',
+    data:{labels:['仕事','プライベート','勉強','その他'],
+      datasets:[{label:'完了',data:cd.done,backgroundColor:'#38bdf8',borderRadius:4,stack:'s'},
+                {label:'未完了',data:cd.pend,backgroundColor:'#bfdbfe',borderRadius:4,stack:'s'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#64748b',stepSize:1}},
+              y:{grid:{display:false},ticks:{font:{size:12},color:'#334155'}}}}});
+
+  const allPri=[...pd.done,...pd.pend];
+  if(SC.pri){SC.pri.data.datasets[0].data=allPri;SC.pri.update();}
+  else SC.pri=new Chart(document.getElementById('priC'),{type:'doughnut',
+    data:{labels:['高・完了','中・完了','低・完了','高・未完了','中・未完了','低・未完了'],
+      datasets:[{data:allPri,backgroundColor:['#fca5a5','#fde68a','#86efac','#fee2e2','#fef9c3','#d1fae5'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+
+  if(SC.done){SC.done.data.datasets[0].data=[dN,pN];SC.done.update();}
+  else SC.done=new Chart(document.getElementById('doneC'),{type:'doughnut',
+    data:{labels:['完了','未完了'],datasets:[{data:[dN,pN],backgroundColor:['#38bdf8','#e0f2fe'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+}
+
+let CC={};
+function renderCat(){
+  const cd=catCounts(),pd=priCounts();
+  if(CC.cat){CC.cat.data.datasets[0].data=cd.done;CC.cat.data.datasets[1].data=cd.pend;CC.cat.update();}
+  else CC.cat=new Chart(document.getElementById('catC'),{type:'bar',
+    data:{labels:['仕事','プライベート','勉強','その他'],
+      datasets:[{label:'完了',data:cd.done,backgroundColor:['#7dd3fc','#6ee7b7','#a5b4fc','#86efac'],borderRadius:4,stack:'s'},
+                {label:'未完了',data:cd.pend,backgroundColor:['#e0f2fe','#ccfbf1','#e0e7ff','#d1fae5'],borderRadius:4,stack:'s'}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#64748b',stepSize:1}},
+              y:{grid:{display:false},ticks:{font:{size:12},color:'#334155'}}}}});
+
+  if(CC.priBar){CC.priBar.data.datasets[0].data=pd.done;CC.priBar.data.datasets[1].data=pd.pend;CC.priBar.update();}
+  else CC.priBar=new Chart(document.getElementById('priBarC'),{type:'bar',
+    data:{labels:['高','中','低'],
+      datasets:[{label:'完了',data:pd.done,backgroundColor:'#38bdf8',borderRadius:4,stack:'s'},
+                {label:'未完了',data:pd.pend,backgroundColor:'#bfdbfe',borderRadius:4,stack:'s'}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},
+      scales:{x:{grid:{display:false},ticks:{font:{size:12},color:'#334155'}},
+              y:{grid:{color:'rgba(0,0,0,.05)'},ticks:{font:{size:11},color:'#64748b',stepSize:1}}}}});
+
+  const donePri=pd.done;
+  if(CC.priDone){CC.priDone.data.datasets[0].data=donePri;CC.priDone.update();}
+  else CC.priDone=new Chart(document.getElementById('priDoneC'),{type:'doughnut',
+    data:{labels:['高・完了','中・完了','低・完了'],datasets:[{data:donePri,backgroundColor:['#fca5a5','#fde68a','#86efac'],borderWidth:0,hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{display:false}}}});
+}
+
+function refreshCharts(){
+  if(Object.keys(SC).length) renderStats();
+  if(Object.keys(CC).length) renderCat();
+}
+
+// ── Calendar ──
+let cy=new Date().getFullYear(),cm=new Date().getMonth();
+function renderCal(){
+  const mns=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+  document.getElementById('cTitle').textContent=`${cy}年 ${mns[cm]}`;
+  const g=document.getElementById('cGrid');
+  let h=['日','月','火','水','木','金','土'].map(d=>`<div class="dow">${d}</div>`).join('');
+  const first=new Date(cy,cm,1).getDay(),last=new Date(cy,cm+1,0).getDate();
+  const prev=new Date(cy,cm,0).getDate();
+  const tm={};
+  tasks.forEach(t=>{if(t.date){if(!tm[t.date])tm[t.date]={done:0,pend:0};t.done?tm[t.date].done++:tm[t.date].pend++;}});
+  for(let i=0;i<first;i++) h+=`<div class="cday om"><span>${prev-first+1+i}</span></div>`;
+  for(let d=1;d<=last;d++){
+    const k=`${cy}-${String(cm+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const info=tm[k];
+    let dots='';
+    if(info){let dh='';for(let i=0;i<Math.min(info.done,3);i++)dh+=`<div class="dd" style="background:#38bdf8"></div>`;for(let i=0;i<Math.min(info.pend,2);i++)dh+=`<div class="dd" style="background:#fca5a5"></div>`;dots=`<div class="drow">${dh}</div>`;}
+    h+=`<div class="cday${k===TODAY?' tod':''}${info?' ht':''}"><span>${d}</span>${dots}</div>`;
+  }
+  const rem=7-((first+last)%7);if(rem<7)for(let d=1;d<=rem;d++)h+=`<div class="cday om"><span>${d}</span></div>`;
+  g.innerHTML=h;
+}
+document.getElementById('cPrev').addEventListener('click',()=>{cm--;if(cm<0){cm=11;cy--;}renderCal();});
+document.getElementById('cNext').addEventListener('click',()=>{cm++;if(cm>11){cm=0;cy++;}renderCal();});
+
+function renderHeatmap(){
+  const dm={};
+  tasks.filter(t=>t.done&&t.date).forEach(t=>{dm[t.date]=(dm[t.date]||0)+1;});
+  const colors=['#e0f2fe','#7dd3fc','#38bdf8','#0369a1'];
+  const g=document.getElementById('hmap');let h='';
+  const today=new Date();
+  for(let i=89;i>=0;i--){const d=new Date(today);d.setDate(d.getDate()-i);const k=d.toISOString().slice(0,10);const v=Math.min(dm[k]||0,3);h+=`<div class="hc" style="background:${colors[v]}" title="${d.toLocaleDateString('ja-JP')} 完了${v}件"></div>`;}
+  g.innerHTML=h;
+}
+
+// ── Welcome ──
+if(!isFirst){document.getElementById('welcomeScreen').style.display='none';render();}
+document.getElementById('wbSample').addEventListener('click',()=>{
+  tasks=SAMPLE_TASKS.map(t=>({...t}));nid=tasks.length+1;
+  goals=SAMPLE_GOALS.map(g=>({...g}));gnid=goals.length+1;
+  save();saveG();localStorage.setItem('launched','1');
+  document.getElementById('welcomeScreen').style.display='none';render();
+});
+document.getElementById('wbEmpty').addEventListener('click',()=>{
+  tasks=[];nid=1;goals=[];gnid=1;
+  save();saveG();localStorage.setItem('launched','1');
+  document.getElementById('welcomeScreen').style.display='none';render();
+});
+
+// ── PWA ──
+let dp=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();dp=e;document.getElementById('installBanner').style.display='flex';});
+document.getElementById('installBtn').addEventListener('click',async()=>{if(!dp)return;dp.prompt();await dp.userChoice;dp=null;document.getElementById('installBanner').style.display='none';});
+document.getElementById('closeBanner').addEventListener('click',()=>{document.getElementById('installBanner').style.display='none';});
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+
+render();
+</script>
+</body>
 </html>
