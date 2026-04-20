@@ -1,55 +1,31 @@
-// モチベTODO - Service Worker (Network-First)
-const CACHE_NAME = 'motitodo-v2';
+var CACHE_NAME = 'pwa-sample-cache-v2';
+var urlsToCache = [
+    '/',
+    '/manifest.json',
+    '/css/style.css',
+    '/js/serviceworker.js',
+    '/js/count.js',
+];
 
-// ── Install: 最低限のキャッシュのみ ──
-self.addEventListener('install', event => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then(cache =>
-      cache.addAll(['./index.html', './manifest.json']).catch(() => {})
-    )
-  );
-  self.skipWaiting();
-});
-
-// ── Activate: 古いキャッシュを削除 ──
-self.addEventListener('activate', event => {
-  event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
-});
-
-// ── Fetch ──
-self.addEventListener('fetch', event => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // Google Fonts: Network-First（失敗時はキャッシュ）
-  if (url.hostname.includes('fonts.g')) {
-    event.respondWith(
-      fetch(request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-          return res;
-        })
-        .catch(() => caches.match(request))
+// インストール処理
+self.addEventListener('install', function(event) {
+    event.waitUntil(
+        caches
+            .open(CACHE_NAME)
+            .then(function(cache) {
+                return cache.addAll(urlsToCache);
+            })
     );
-    return;
-  }
-
-  // HTML / JS / CSS: Network-First → オフライン時のみキャッシュにフォールバック
-  if (url.origin === location.origin) {
-    event.respondWith(
-      fetch(request)
-        .then(res => {
-          const clone = res.clone();
-          caches.open(CACHE_NAME).then(cache => cache.put(request, clone));
-          return res;
-        })
-        .catch(() => caches.match(request))
-    );
-  }
 });
+
+// リソースフェッチ時のキャッシュロード処理
+self.addEventListener('fetch', function(event) {
+    event.respondWith(
+        caches
+            .match(event.request)
+            .then(function(response) {
+                return response ? response : fetch(event.request);
+            })
+    );
+});
+
